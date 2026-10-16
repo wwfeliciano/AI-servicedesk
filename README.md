@@ -6,8 +6,48 @@ portal, e-mail e WhatsApp.
 
 Projeto acadêmico — CEUNSP, Ciência da Computação, Análise e Projeto de Sistemas.
 
-> **Situação:** organização concluída (E0). A Fundação (F0) ainda não começou; os passos para subir
-> o ambiente entram aqui na F0.1. Andamento em [docs/DEVELOPMENT_STATUS.md](docs/DEVELOPMENT_STATUS.md).
+> **Situação:** Fase 0 em andamento. Já sobem banco, Redis, MinIO e Mailpit; a API entra na F0.2.
+> Andamento em [docs/DEVELOPMENT_STATUS.md](docs/DEVELOPMENT_STATUS.md).
+
+## Pré-requisitos
+
+- Linux com Docker Engine e Compose v2 (o servidor do projeto é ARM64; todas as imagens têm build
+  para ARM64 e x86-64).
+- `make` e `openssl`.
+
+Docker Desktop só é gratuito para uso pessoal, projetos open source não comerciais e empresas com
+menos de 250 funcionários e menos de US$ 10 milhões de receita anual. Fora disso, use Docker
+Engine no Linux/WSL2, Rancher Desktop ou Podman Desktop.
+
+## Como subir
+
+```bash
+make env     # cria o .env com segredos aleatórios (não sobrescreve um existente)
+make up      # valida o Compose, sobe os serviços e espera ficarem saudáveis
+make ps      # estado dos serviços
+make help    # todos os atalhos
+```
+
+Serviços em desenvolvimento (portas só em `127.0.0.1`, configuráveis no `.env`):
+
+| Serviço | Endereço no host | Uso |
+|---|---|---|
+| PostgreSQL 17 | `127.0.0.1:5442` | DBeaver: banco, usuário e senha do `.env` |
+| MinIO (S3) | `http://127.0.0.1:9100` | API S3 dos anexos (F3) |
+| Console do MinIO | `http://127.0.0.1:9101` | usuário `S3_ACCESS_KEY`, senha `S3_SECRET_KEY` |
+| Mailpit | `http://127.0.0.1:8125` | caixa de e-mails de teste (SMTP em 1125) |
+
+Para abrir de outra máquina, use um túnel SSH (`ssh -L 9101:127.0.0.1:9101 ubuntu@servidor`) ou o
+encaminhamento de portas do VS Code.
+
+`make down` para os serviços e preserva os volumes (dados do banco e do MinIO).
+
+### Solução de problemas
+
+- **Porta em uso:** troque `PORTA_*` no `.env` e rode `make up` de novo.
+- **Serviço `unhealthy`:** `make logs s=<serviço>`.
+- **Banco do n8n não criado:** o script de `infra/postgres/init/` só roda quando o volume
+  `pg_data` é criado pela primeira vez.
 
 ## Stack
 
@@ -39,6 +79,8 @@ helpdeskai/
 ├── docs/                 documentação (acima)
 ├── backend/              API FastAPI (a partir da F0.2)
 ├── frontend/             SPA React (a partir da F0.5)
-├── infra/                Postgres, Nginx (a partir da F0.1)
+├── infra/                init do Postgres, gerador do .env (Nginx na F0.5)
+├── docker-compose.yml    serviços base · docker-compose.override.yml: dev
+├── Makefile · .env.example
 └── integrations/         n8n e WAHA (F6)
 ```

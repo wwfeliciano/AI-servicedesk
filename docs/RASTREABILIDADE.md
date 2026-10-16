@@ -55,7 +55,7 @@ Estados: `pendente` · `em_andamento` · `implementado`.
 
 | Item do DoD | Recorte | Teste | Estado |
 |---|---|---|---|
-| Banco no ar via `docker compose up` | F0.1 | healthcheck `pg_isready` | pendente |
+| Banco no ar via `docker compose up` | F0.1 | healthcheck `pg_isready` (`make up` espera `healthy`) | implementado |
 | Conexão validada por teste automatizado | F0.3 | `test_conexao_banco` | pendente |
 | Migration cria 6 tabelas, FKs e ENUMs | F0.3 | `test_migrations_ida_e_volta` | pendente |
 | Build do backend e do front-end sem erros | F0.2, F0.5 | `make build` | pendente |

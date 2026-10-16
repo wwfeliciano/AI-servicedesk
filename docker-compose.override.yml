@@ -1,0 +1,34 @@
+# Desenvolvimento: portas no host (só 127.0.0.1) e Mailpit.
+# Carregado automaticamente pelo "docker compose"; em produção use -f docker-compose.yml -f docker-compose.prod.yml.
+# As portas padrão evitam as já usadas no servidor (5432, 8080, 8090, 9000 e 9001).
+
+services:
+  db:
+    ports:
+      - "127.0.0.1:${PORTA_DB:-5442}:5432"
+
+  s3:
+    ports:
+      - "127.0.0.1:${PORTA_S3:-9100}:9000"
+      - "127.0.0.1:${PORTA_S3_CONSOLE:-9101}:9001"
+
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+    ports:
+      - "127.0.0.1:${PORTA_MAILPIT_UI:-8125}:8025"
+      - "127.0.0.1:${PORTA_MAILPIT_SMTP:-1125}:1025"
+    networks:
+      - interna
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128m

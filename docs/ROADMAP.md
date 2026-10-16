@@ -24,7 +24,7 @@ Registros vizinhos, cada um com propósito próprio:
 | Etapa | Assunto | Requisitos | Estado |
 |---|---|---|---|
 | E0 | Organização do repositório e da documentação | — | concluído |
-| F0 | Fundação: infraestrutura, API base, banco e CI | Doc 02 | próximo |
+| F0 | Fundação: infraestrutura, API base, banco e CI | Doc 02 | em_andamento |
 | F1 | Autenticação e cadastro de usuários | UC01, RF01, RN07, RNF01 | futuro |
 | F2 | Abertura e consulta de chamados | UC02, UC03, RF02, RF05, RN04, RN06, RNF02, RNF03 | futuro |
 | F3 | Anexos e notificações no portal | RF02, RF04 | futuro |
@@ -49,8 +49,8 @@ Estrutura de documentação no mesmo formato do projeto GRH, antes de qualquer c
 
 | Recorte | Entrega | Estado |
 |---|---|---|
-| F0.1 | Infraestrutura: `docker-compose.yml` (db, redis, s3/MinIO), override de dev, `.env.example`, `Makefile`, portas em `127.0.0.1` e limites de recursos | próximo |
-| F0.2 | API base: `create_app`, configuração, logs JSON, `X-Request-ID`, formato único de erro, `/api/health` e `/api/health/db`; Dockerfile do backend; serviços `api` e `worker` (esqueleto com heartbeat) | futuro |
+| F0.1 | Infraestrutura: `docker-compose.yml` (db, redis, s3/MinIO), override de dev, `.env.example`, `Makefile`, portas em `127.0.0.1` e limites de recursos | concluído |
+| F0.2 | API base: `create_app`, configuração, logs JSON, `X-Request-ID`, formato único de erro, `/api/health` e `/api/health/db`; Dockerfile do backend; serviços `api` e `worker` (esqueleto com heartbeat) | próximo |
 | F0.3 | Banco: entidades das 6 tabelas, migration `0001_esquema_inicial`, serviço `migrate`, `docs/der.md`, `test_conexao_banco` e ida e volta das migrations | futuro |
 | F0.4 | Qualidade e CI: ruff, mypy, pytest com cobertura, GitHub Actions, template de PR | futuro |
 | F0.5 | Front-end base: Vite + React + Tailwind com os tokens da seção 8.2, `AppShell` fiel ao protótipo, rotas com telas vazias, serviço `web` (Nginx) | futuro |
