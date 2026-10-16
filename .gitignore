@@ -1,0 +1,33 @@
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node / front-end
+node_modules/
+dist/
+build/
+.npm-cache/
+playwright-report/
+test-results/
+
+# Backups locais e volumes
+backups/
+*.dump
+
+# IDE e sistema
+.vscode/
+.idea/
+*.swp
+.DS_Store
