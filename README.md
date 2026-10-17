@@ -6,7 +6,8 @@ portal, e-mail e WhatsApp.
 
 Projeto acadêmico — CEUNSP, Ciência da Computação, Análise e Projeto de Sistemas.
 
-> **Situação:** Fase 0 em andamento. Já sobem banco, Redis, MinIO e Mailpit; a API entra na F0.2.
+> **Situação:** Fase 0 em andamento. Sobem banco, Redis, MinIO, Mailpit, a API e o worker; o banco
+> e as migrations entram na F0.3.
 > Andamento em [docs/DEVELOPMENT_STATUS.md](docs/DEVELOPMENT_STATUS.md).
 
 ## Pré-requisitos
@@ -28,10 +29,19 @@ make ps      # estado dos serviços
 make help    # todos os atalhos
 ```
 
+Qualidade e build do backend (usam o `uv` no host):
+
+```bash
+make lint    # ruff check, ruff format --check e mypy strict
+make test    # pytest
+make build   # build das imagens Docker (api e worker)
+```
+
 Serviços em desenvolvimento (portas só em `127.0.0.1`, configuráveis no `.env`):
 
 | Serviço | Endereço no host | Uso |
 |---|---|---|
+| API (FastAPI) | `http://127.0.0.1:8100` | `GET /api/health` e `/api/health/db`; docs em `/api/docs` |
 | PostgreSQL 17 | `127.0.0.1:5442` | DBeaver: banco, usuário e senha do `.env` |
 | MinIO (S3) | `http://127.0.0.1:9100` | API S3 dos anexos (F3) |
 | Console do MinIO | `http://127.0.0.1:9101` | usuário `S3_ACCESS_KEY`, senha `S3_SECRET_KEY` |
@@ -77,7 +87,7 @@ seção 3 do [prompt de implementação](docs/PROMPT_IMPLEMENTACAO.md).
 helpdeskai/
 ├── AGENTS.md · CLAUDE.md · README.md
 ├── docs/                 documentação (acima)
-├── backend/              API FastAPI (a partir da F0.2)
+├── backend/              API FastAPI (app/core, controllers; worker) — banco e migrations na F0.3
 ├── frontend/             SPA React (a partir da F0.5)
 ├── infra/                init do Postgres, gerador do .env (Nginx na F0.5)
 ├── docker-compose.yml    serviços base · docker-compose.override.yml: dev

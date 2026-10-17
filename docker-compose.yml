@@ -85,6 +85,75 @@ services:
           cpus: "0.5"
           memory: 512m
 
+  api:
+    # API FastAPI (F0.2). Imagem do backend; migrations e o serviço migrate entram na F0.3.
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      AMBIENTE: ${AMBIENTE:-dev}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TZ: ${TZ:-America/Sao_Paulo}
+      PORTAL_URL: ${PORTAL_URL:-http://localhost:8180}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      REDIS_PREFIXO: ${REDIS_PREFIXO:-mentory:}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - interna
+    healthcheck:
+      # A imagem slim não tem curl; usa o próprio Python para checar /api/health.
+      test:
+        ["CMD", "python", "-c",
+         "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512m
+
+  worker:
+    # Esqueleto (F0.2): mantém o worker:heartbeat no Redis. Despacho do outbox na F6.
+    build:
+      context: ./backend
+    restart: unless-stopped
+    command: ["python", "-m", "app.worker"]
+    environment:
+      AMBIENTE: ${AMBIENTE:-dev}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TZ: ${TZ:-America/Sao_Paulo}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      REDIS_PREFIXO: ${REDIS_PREFIXO:-mentory:}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - interna
+    healthcheck:
+      # Saudável enquanto o heartbeat existir no Redis (TTL de 30 s, seção 5.5).
+      # A imagem não tem redis-cli; usa o cliente Python do próprio projeto.
+      test:
+        ["CMD", "python", "-c",
+         "import sys; from app.core.redis import criar_cliente_redis, chave; sys.exit(0 if criar_cliente_redis().exists(chave('worker:heartbeat')) else 1)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256m
+
 volumes:
   pg_data:
   redis_data:

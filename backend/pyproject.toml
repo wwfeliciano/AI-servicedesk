@@ -1,0 +1,64 @@
+[project]
+name = "mentory-helpdesk"
+version = "0.0.0"
+description = "Mentory Help Desk — API (FastAPI)"
+requires-python = "==3.13.*"
+license = { text = "MIT" }
+
+# Dependências de runtime. A F0.2 usa FastAPI, pydantic-settings, SQLAlchemy/psycopg
+# (sessão e health do banco), redis (heartbeat do worker), uvicorn e typer (CLI).
+# Demais libs da seção 3.1 entram quando a fase correspondente precisar.
+dependencies = [
+    "fastapi>=0.115,<0.116",
+    "uvicorn[standard]>=0.34,<0.35",
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.6,<3",
+    "sqlalchemy>=2.0,<2.1",
+    "psycopg[binary]>=3.2,<4",
+    "redis>=5.2,<6",
+    "typer>=0.15,<0.16",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8,<0.9",
+    "mypy>=1.13,<2",
+    "pytest>=8.3,<9",
+    "pytest-cov>=6.0,<7",
+    "httpx>=0.28,<0.29",
+    "fakeredis>=2.26,<3",
+]
+
+[tool.uv]
+# Aplicação, não biblioteca: o uv não tenta empacotar/instalar o projeto.
+package = false
+
+# ===== Ruff =====
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
+
+# ===== mypy (strict) =====
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+show_error_codes = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["fakeredis.*"]
+ignore_missing_imports = true
+
+# ===== pytest =====
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "performance: testes de desempenho (RNF02), rodados sob demanda",
+]

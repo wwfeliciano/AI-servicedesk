@@ -3,11 +3,13 @@
 Andamento do projeto, recorte a recorte. Mais recente primeiro. O plano está em
 [ROADMAP.md](ROADMAP.md).
 
-## Situação atual (16/10/2026)
+## Situação atual (17/10/2026)
 
-- **Etapa vigente:** F0 — Fundação. Último recorte: **F0.1 — Infraestrutura** (concluído).
-  Próximo: **F0.2 — API base**, aguardando o pedido do usuário.
-- **No ar:** `db`, `redis`, `s3` (MinIO) e `mailpit`, todos `healthy` (`make ps`).
+- **Etapa vigente:** F0 — Fundação. Último recorte: **F0.2 — API base** (concluído).
+  Próximo: **F0.3 — Banco** (entidades, migration `0001`, serviço `migrate`), aguardando o pedido
+  do usuário.
+- **No ar:** `db`, `redis`, `s3` (MinIO), `mailpit`, `api` e `worker`, todos `healthy` (`make ps`).
+  API em `http://127.0.0.1:8100` (dev).
 - **Repositório:** Git local na branch `develop`, sem remoto.
 
 ## Pendências
@@ -24,6 +26,44 @@ Vão para [DECISOES.md](DECISOES.md) quando o código existir.
   recorte.
 
 ---
+
+## F0.2 — API base (17/10/2026)
+
+- `backend/` com FastAPI, estrutura em camadas iniciada (`app/core`, `app/controllers`).
+  Dependências com `uv` (projeto não-empacotado, `package = false`): FastAPI, Uvicorn,
+  pydantic-settings, SQLAlchemy 2.0 síncrono + psycopg 3, redis e Typer; dev: Ruff, mypy, pytest,
+  pytest-cov, httpx e fakeredis. `uv.lock` commitado.
+- `app/main.py` (`create_app`): middleware de `X-Request-ID` (recebe ou gera; devolve no header e
+  propaga para os logs), handlers de erro e router de health. OpenAPI em `/api/docs` e
+  `/api/openapi.json`, desligados em produção.
+- `app/core`: `config.py` (pydantic-settings, lê o `.env`, só os campos usados na F0.2,
+  `extra="ignore"`); `logging.py` (logs JSON em stdout com `request_id`); `database.py` (engine e
+  sessão síncronos; `Base` declarativa — a API nunca aplica migration); `redis.py`
+  (`criar_cliente_redis` e `chave()` com o prefixo); `errors.py` (formato único da seção 7.1:
+  `ErroAPI`, conversão dos erros do Pydantic/HTTP e mensagens em PT-BR).
+- `app/controllers/health.py`: `GET /api/health` (vida da API) e `GET /api/health/db`
+  (`SELECT 1`; `503 BANCO_INDISPONIVEL` quando o banco não responde).
+- `app/worker.py`: esqueleto rodado por `python -m app.worker`; mantém `worker:heartbeat` no Redis
+  (TTL de 30 s), base para o despacho do outbox na F6. Encerra em `SIGTERM`/`SIGINT`.
+- `backend/Dockerfile` multi-stage (uv + `python:3.13.16-slim`, `uv sync --frozen --no-dev`,
+  usuário não-root) e `.dockerignore`.
+- `docker-compose.yml`: serviços `api` (healthcheck `GET /api/health`, depende de `db` e `redis`
+  saudáveis, 0,5 CPU/512 MB) e `worker` (healthcheck pela chave `worker:heartbeat`, 0,25 CPU/256 MB).
+  Override de dev: API em `127.0.0.1:8100`, `--reload` e `./backend/app` montado só leitura. A
+  dependência de `migrate` (`service_completed_successfully`) entra na F0.3 junto com o Alembic.
+- `Makefile`: `lint` (ruff check + format --check + mypy), `test` (pytest) e `build`.
+- **Testes (8):** health, header `X-Request-ID` gerado, `X-Request-ID` recebido e propagado,
+  `/api/health/db` ok (sessão substituída), `/api/health/db` → 503 no formato único, rota
+  inexistente no formato único (mensagem PT-BR) e heartbeat do worker (fakeredis).
+- **Validação:**
+  - `make lint` ok (ruff check, ruff format --check, mypy `strict`); `make test` 8 passaram;
+  - `docker compose config` ok; `make build` sem erros;
+  - `make up`: `db`, `redis`, `s3`, `mailpit`, `api` e `worker` ficaram `healthy`;
+  - `GET /api/health` → `200 {"status":"ok"}` com `X-Request-ID`; `GET /api/health/db` →
+    `200 {"status":"ok","db":"ok"}`; `X-Request-ID` enviado é devolvido; rota inexistente →
+    `404 {"codigo":"NAO_ENCONTRADO","mensagem":"Recurso não encontrado."}`; logs saíram em JSON;
+    `worker:heartbeat` presente no Redis com TTL dentro de 30 s.
+- O `test_conexao_banco` com PostgreSQL real e as 6 tabelas, e o serviço `migrate`, entram na F0.3.
 
 ## F0.1 — Infraestrutura (16/10/2026)
 

@@ -7,6 +7,16 @@ services:
     ports:
       - "127.0.0.1:${PORTA_DB:-5442}:5432"
 
+  api:
+    ports:
+      - "127.0.0.1:${PORTA_API:-8100}:8000"
+    # Hot reload em dev, com o código montado do host (seção 10.4).
+    command:
+      ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000",
+       "--proxy-headers", "--forwarded-allow-ips", "*", "--reload"]
+    volumes:
+      - ./backend/app:/app/app:ro
+
   s3:
     ports:
       - "127.0.0.1:${PORTA_S3:-9100}:9000"
