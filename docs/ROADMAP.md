@@ -51,8 +51,8 @@ Estrutura de documentação no mesmo formato do projeto GRH, antes de qualquer c
 |---|---|---|
 | F0.1 | Infraestrutura: `docker-compose.yml` (db, redis, s3/MinIO), override de dev, `.env.example`, `Makefile`, portas em `127.0.0.1` e limites de recursos | concluído |
 | F0.2 | API base: `create_app`, configuração, logs JSON, `X-Request-ID`, formato único de erro, `/api/health` e `/api/health/db`; Dockerfile do backend; serviços `api` e `worker` (esqueleto com heartbeat) | concluído |
-| F0.3 | Banco: entidades das 6 tabelas, migration `0001_esquema_inicial`, serviço `migrate`, `docs/der.md`, `test_conexao_banco` e ida e volta das migrations | próximo |
-| F0.4 | Qualidade e CI: ruff, mypy, pytest com cobertura, GitHub Actions, template de PR | futuro |
+| F0.3 | Banco: entidades das 6 tabelas, migration `0001_esquema_inicial`, serviço `migrate`, `docs/der.md`, `test_conexao_banco` e ida e volta das migrations | concluído |
+| F0.4 | Qualidade e CI: ruff, mypy, pytest com cobertura, GitHub Actions, template de PR | próximo |
 | F0.5 | Front-end base: Vite + React + Tailwind com os tokens da seção 8.2, `AppShell` fiel ao protótipo, rotas com telas vazias, serviço `web` (Nginx) | futuro |
 
 **DoD da F0** (seção 13 do prompt): `make up` sobe tudo saudável; `make migrate` cria as 6 tabelas,

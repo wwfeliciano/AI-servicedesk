@@ -5,11 +5,11 @@ Andamento do projeto, recorte a recorte. Mais recente primeiro. O plano está em
 
 ## Situação atual (17/10/2026)
 
-- **Etapa vigente:** F0 — Fundação. Último recorte: **F0.2 — API base** (concluído).
-  Próximo: **F0.3 — Banco** (entidades, migration `0001`, serviço `migrate`), aguardando o pedido
-  do usuário.
+- **Etapa vigente:** F0 — Fundação. Último recorte: **F0.3 — Banco** (concluído).
+  Próximo: **F0.4 — Qualidade e CI** (ruff/mypy/pytest com cobertura, GitHub Actions, template
+  de PR), aguardando o pedido do usuário.
 - **No ar:** `db`, `redis`, `s3` (MinIO), `mailpit`, `api` e `worker`, todos `healthy` (`make ps`).
-  API em `http://127.0.0.1:8100` (dev).
+  API em `http://127.0.0.1:8100` (dev). Banco com o esquema `0001` aplicado (`make migrate`).
 - **Repositório:** Git local na branch `develop`, sem remoto.
 
 ## Pendências
@@ -24,6 +24,57 @@ Vão para [DECISOES.md](DECISOES.md) quando o código existir.
   base é o último recorte (F0.5).
 - **Etapas quebradas em recortes** (F0.1, F0.2...), no formato do GRH, com commit e relatório por
   recorte.
+
+---
+
+## F0.3 — Banco (17/10/2026)
+
+- **Alembic** adicionado às dependências do backend (`alembic>=1.14,<1.15`, resolvido
+  `1.14.1`); `uv.lock` atualizado. `alembic.ini` com `script_location = app/migrations` e
+  `file_template` `%(rev)s_%(slug)s`; a `DATABASE_URL` vem de `app.core.config`, não do `.ini`.
+  `env.py` com modos offline e online, `target_metadata = Base.metadata` e importação das
+  entidades para o `--autogenerate`; respeita uma `sqlalchemy.url` já fixada (os testes injetam
+  a URL do host).
+- **Entidades** em `app/entities/` (um módulo por tabela + `enums.py` + `__init__`): `Usuario`,
+  `Categoria`, `Chamado`, `FollowUp`, `Solucao`, `BaseConhecimento`. PKs `Identity(always=True)`
+  (`categorias` em `INT`), `TIMESTAMPTZ`, ENUMs nativos referenciados com `create_type=False`,
+  `protocolo` com `Computed(persisted=True)` (somente leitura), CHECKs, FKs `ON DELETE RESTRICT`,
+  índice único parcial `uq_solucoes_uma_pendente` e índice trigram `ix_chamados_titulo_trgm`
+  sobre `f_unaccent(lower(titulo))`.
+- **Migration `0001_esquema_inicial`** produz exatamente o SQL da seção 5.2: extensões
+  `pg_trgm`/`unaccent`, função `IMMUTABLE f_unaccent`, os 4 tipos ENUM, as 6 tabelas (com a
+  coluna gerada, CHECKs e índices) e as 7 categorias (TI, RH, Financeiro, Acesso, Hardware,
+  Software, Outro). `downgrade()` reverte tudo, inclusive `DROP TYPE`, `DROP FUNCTION` e
+  `DROP EXTENSION`.
+- **Compose:** serviço `migrate` (imagem do backend, `alembic upgrade head`, one-shot,
+  `depends_on db healthy`, 0,25 CPU/256 MB, sem porta); `api` e `worker` agora dependem de
+  `migrate` com `service_completed_successfully`. `Dockerfile` copia o `alembic.ini` para a
+  imagem.
+- **Makefile:** `make migrate` (`docker compose run --rm migrate`) e
+  `make migration nome=...` (`alembic revision --autogenerate`, para revisão manual).
+- **Testes (10 no total, 2 novos):** `test_conexao_banco` (PostgreSQL real: 6 tabelas, 4 ENUMs e
+  7 categorias) e `test_migrations_ida_e_volta` (`upgrade → downgrade base → upgrade`). Ambos
+  pulam se o banco não estiver no ar. A URL do host é montada a partir do `.env` da raiz
+  (`db:5432` → `127.0.0.1:PORTA_DB`). Sem ids fixos (as sequências `IDENTITY` não voltam).
+- **Documentação:** `docs/der.md` (Mermaid das 6 tabelas e invariantes), `docs/DECISOES.md`
+  (ADR 2026-10-17 com as diferenças da seção 5.3 e o Alembic como ferramenta de migration),
+  `docs/ROADMAP.md` (F0.3 concluído), `docs/RASTREABILIDADE.md` (itens do DoD do banco) e
+  `README.md` (`make migrate`).
+- **Validação:**
+  - `make lint` ok (ruff check, ruff format --check, mypy `strict`, 21 arquivos);
+  - `make migrate` aplicou o esquema; conferidas 6 tabelas, 4 ENUMs, FKs, índices e 7 categorias;
+  - ida e volta (`alembic upgrade head → downgrade base → upgrade head`) limpa, com os ENUMs e a
+    função removidos no `downgrade`;
+  - `make test` 10 passaram (inclui `test_conexao_banco` e a ida e volta);
+  - `docker compose config` ok; serviço `migrate` roda e sai com código 0; `git diff --check`
+    limpo.
+
+## Pendências e riscos
+
+- O `--autogenerate` relata duas diferenças cosméticas e esperadas no `chamados.protocolo`:
+  `NOT NULL` (o Alembic não altera a nulabilidade de coluna gerada) e a representação da
+  unicidade do protocolo (índice único, como no SQL). Não afetam o esquema; a migration escrita
+  à mão é a fonte da verdade.
 
 ---
 

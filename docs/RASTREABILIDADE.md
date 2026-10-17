@@ -59,6 +59,7 @@ Estados: `pendente` · `em_andamento` · `implementado`.
 | API no ar com `/api/health` e `/api/health/db` | F0.2 | `test_conexao.py` (health, X-Request-ID, formato de erro) | implementado |
 | Formato único de erro e `X-Request-ID` | F0.2 | `test_conexao.py` | implementado |
 | Build do backend sem erros | F0.2 | `make build` | implementado |
-| Conexão validada por teste automatizado | F0.3 | `test_conexao_banco` | pendente |
-| Migration cria 6 tabelas, FKs e ENUMs | F0.3 | `test_migrations_ida_e_volta` | pendente |
+| Esquema das 6 tabelas, ENUMs, índices e 7 categorias (seção 5.2) | F0.3 | migration `0001_esquema_inicial`; `test_conexao_banco` (`docs/der.md`) | implementado |
+| Conexão validada por teste automatizado | F0.3 | `test_conexao_banco` | implementado |
+| Migration cria 6 tabelas, FKs e ENUMs | F0.3 | `test_migrations_ida_e_volta` | implementado |
 | Build do front-end sem erros | F0.5 | `make build` | pendente |

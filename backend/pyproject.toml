@@ -17,6 +17,7 @@ dependencies = [
     "psycopg[binary]>=3.2,<4",
     "redis>=5.2,<6",
     "typer>=0.15,<0.16",
+    "alembic>=1.14,<1.15",
 ]
 
 [dependency-groups]
@@ -41,6 +42,11 @@ src = ["app", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# As migrations contêm SQL literal (DDL da seção 5.2) que deve ficar legível e
+# idêntico ao prompt; não quebramos essas linhas por E501.
+"app/migrations/versions/*.py" = ["E501"]
 
 # ===== mypy (strict) =====
 [tool.mypy]

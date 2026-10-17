@@ -33,6 +33,7 @@ WORKDIR /app
 # Ambiente virtual pronto do estágio de build e o código da aplicação.
 COPY --from=build --chown=app:app /app/.venv /app/.venv
 COPY --chown=app:app app ./app
+COPY --chown=app:app alembic.ini ./
 COPY --chown=app:app pyproject.toml uv.lock ./
 
 USER app

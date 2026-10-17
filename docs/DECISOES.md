@@ -21,6 +21,42 @@ migration `0001_esquema_inicial`.
 
 ---
 
+## 2026-10-17 — Esquema inicial (migration 0001) e diferenças em relação ao Documento 02
+
+**Contexto:** a F0.3 cria o banco. O dicionário de dados do Documento 02 precisava de
+ajustes para atender aos requisitos (RN03, RN04, RNF02), ao protótipo e à exclusão lógica,
+e faltava escolher a ferramenta de migration.
+
+**Decisão:** o esquema é criado **só por migration Alembic** (`0001_esquema_inicial`), que
+reproduz exatamente o SQL da seção 5.2. O Alembic é a ferramenta de migration do projeto
+(sync + psycopg 3); a `DATABASE_URL` vem de `app.core.config`, não do `alembic.ini`. A API
+nunca aplica migration na partida — quem aplica é o serviço `migrate` (`make migrate`), do
+qual `api` e `worker` dependem (`service_completed_successfully`). As diferenças adotadas em
+relação ao Documento 02 (seção 5.3 do prompt):
+
+| Mudança | Motivo |
+|---|---|
+| `usuarios.ativo` | RN04 e TU02 exigem "solicitante ativo"; também é a exclusão lógica prevista |
+| `usuarios.cargo` (opcional) | O protótipo mostra o cargo abaixo do nome ("Analista de Marketing") |
+| `chamados.protocolo` (coluna gerada) | Busca por protocolo com índice; formato estável acima de 9999 (`TK-12345`) |
+| `chamados.data_atualizacao` | Os cards exibem "Atualizado: dd/mm/aa" |
+| `categorias.icone`, `ordem` e `ativa` | Grade de categorias montada pelo banco; desativar sem apagar (FK) |
+| CHECKs e índice único parcial em `solucoes` | Invariantes da RN03, do TU04 e de "uma solução pendente por chamado" |
+| `TIMESTAMPTZ` em vez de `TIMESTAMP` | Evita erro de fuso horário |
+| Extensões `pg_trgm` e `unaccent` + `f_unaccent()` | Busca por título em tempo real, sem diferenciar acento, dentro do RNF02 |
+
+**Consequências:** os 4 tipos ENUM (`perfil_usuario`, `severidade_chamado`, `status_chamado`,
+`status_aprovacao`) são criados e removidos explicitamente na migration (`create_type=False`
+nas colunas), para o `downgrade()` ser completo (inclui `DROP TYPE`, `DROP FUNCTION` e
+`DROP EXTENSION`). FKs com `ON DELETE RESTRICT`: usuários e chamados nunca são apagados. O
+`protocolo` é coluna gerada e somente leitura (`Computed(persisted=True)`); a busca por título
+usa `f_unaccent(lower(titulo))`, idêntica à do índice trigram. A ida e volta
+(`upgrade head → downgrade base → upgrade head`) foi validada em PostgreSQL real.
+
+**Requisitos:** RN03 (CHECK), RN04, RN07 (UNIQUE), RNF02 (índices e busca sem acento).
+
+---
+
 ## 2026-10-16 — Portas de desenvolvimento só em 127.0.0.1, fora das já usadas no servidor
 
 **Contexto:** o prompt sugere 5432, 8000, 8080 e 8333 no host. No servidor Oracle, 5432 (PostgreSQL

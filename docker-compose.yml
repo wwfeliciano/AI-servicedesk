@@ -85,8 +85,32 @@ services:
           cpus: "0.5"
           memory: 512m
 
+  migrate:
+    # Aplica as migrations Alembic e encerra (one-shot). A API nunca aplica migration
+    # na partida; quem aplica é este serviço (make migrate). api e worker esperam ele
+    # concluir com sucesso.
+    build:
+      context: ./backend
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      AMBIENTE: ${AMBIENTE:-dev}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TZ: ${TZ:-America/Sao_Paulo}
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - interna
+    restart: "no"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256m
+
   api:
-    # API FastAPI (F0.2). Imagem do backend; migrations e o serviço migrate entram na F0.3.
+    # API FastAPI (F0.2). Imagem do backend; migrations são aplicadas pelo serviço migrate.
     build:
       context: ./backend
     restart: unless-stopped
@@ -103,6 +127,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - interna
     healthcheck:
@@ -136,6 +162,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - interna
     healthcheck:

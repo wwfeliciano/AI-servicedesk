@@ -6,8 +6,9 @@ portal, e-mail e WhatsApp.
 
 Projeto acadêmico — CEUNSP, Ciência da Computação, Análise e Projeto de Sistemas.
 
-> **Situação:** Fase 0 em andamento. Sobem banco, Redis, MinIO, Mailpit, a API e o worker; o banco
-> e as migrations entram na F0.3.
+> **Situação:** Fase 0 em andamento. Sobem banco, Redis, MinIO, Mailpit, a API e o worker; o
+> esquema do banco (6 tabelas, ENUMs, índices e as 7 categorias) é aplicado por `make migrate`
+> (F0.3 concluída).
 > Andamento em [docs/DEVELOPMENT_STATUS.md](docs/DEVELOPMENT_STATUS.md).
 
 ## Pré-requisitos
@@ -25,6 +26,7 @@ Engine no Linux/WSL2, Rancher Desktop ou Podman Desktop.
 ```bash
 make env     # cria o .env com segredos aleatórios (não sobrescreve um existente)
 make up      # valida o Compose, sobe os serviços e espera ficarem saudáveis
+make migrate # aplica as migrations (serviço migrate); cria as 6 tabelas e as 7 categorias
 make ps      # estado dos serviços
 make help    # todos os atalhos
 ```
@@ -32,9 +34,10 @@ make help    # todos os atalhos
 Qualidade e build do backend (usam o `uv` no host):
 
 ```bash
-make lint    # ruff check, ruff format --check e mypy strict
-make test    # pytest
-make build   # build das imagens Docker (api e worker)
+make lint      # ruff check, ruff format --check e mypy strict
+make test      # pytest (inclui test_conexao_banco com PostgreSQL real)
+make build     # build das imagens Docker (api e worker)
+make migration nome=descricao   # gera uma migration por autogenerate (revisar à mão)
 ```
 
 Serviços em desenvolvimento (portas só em `127.0.0.1`, configuráveis no `.env`):
