@@ -62,4 +62,6 @@ Estados: `pendente` · `em_andamento` · `implementado`.
 | Esquema das 6 tabelas, ENUMs, índices e 7 categorias (seção 5.2) | F0.3 | migration `0001_esquema_inicial`; `test_conexao_banco` (`docs/der.md`) | implementado |
 | Conexão validada por teste automatizado | F0.3 | `test_conexao_banco` | implementado |
 | Migration cria 6 tabelas, FKs e ENUMs | F0.3 | `test_migrations_ida_e_volta` | implementado |
+| CI verde (ruff, mypy, pytest com cobertura e PostgreSQL) | F0.4 | `.github/workflows/ci.yml` (job `backend`); cobertura `--cov=app` em `pyproject.toml` | implementado |
+| Template de PR e fluxo de branches (seção 12.4) | F0.4 | `.github/pull_request_template.md`; notas de proteção no `README.md` | implementado |
 | Build do front-end sem erros | F0.5 | `make build` | pendente |

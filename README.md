@@ -35,7 +35,8 @@ Qualidade e build do backend (usam o `uv` no host):
 
 ```bash
 make lint      # ruff check, ruff format --check e mypy strict
-make test      # pytest (inclui test_conexao_banco com PostgreSQL real)
+make format    # aplica o ruff format no backend
+make test      # pytest com cobertura (--cov=app, term-missing); inclui test_conexao_banco com PostgreSQL real
 make build     # build das imagens Docker (api e worker)
 make migration nome=descricao   # gera uma migration por autogenerate (revisar à mão)
 ```
@@ -67,6 +68,24 @@ encaminhamento de portas do VS Code.
 Python 3.13 (FastAPI, SQLAlchemy 2.0, Alembic) · React 19 + TypeScript (Vite, Tailwind 4) ·
 PostgreSQL 17 · Redis 8 · MinIO (API S3) · n8n + WAHA · Docker Compose. Detalhes e licenças na
 seção 3 do [prompt de implementação](docs/PROMPT_IMPLEMENTACAO.md).
+
+## Integração contínua e fluxo de branches
+
+O workflow `.github/workflows/ci.yml` (GitHub Actions) roda em cada `pull_request` e nos `push`
+para `develop` e `main`. O job `backend` sobe um serviço PostgreSQL 17, instala o `uv` (versão
+fixada) e o Python 3.13, e executa `ruff check`, `ruff format --check`, `mypy` (strict),
+`alembic upgrade head` e `pytest` com cobertura. As ações são fixadas por versão (sem `@latest`).
+
+Fluxo do Documento 02 (seção 12.4): `feature/*` → PR para `develop` → PR para `main`. O repositório
+usa o template de PR em `.github/pull_request_template.md`.
+
+Proteção de branch pretendida no GitHub (configuração manual no repositório, documentação apenas):
+
+- **`main` protegida:** PR obrigatório, pelo menos **1 aprovação** e **build verde** (o job `backend`
+  do CI como *required status check*); sem push direto; sem `force-push`.
+- **`develop`:** recebe os PRs das `feature/*`; CI verde exigido antes do merge.
+- Proteção com revisão obrigatória em repositório privado exige GitHub Pro/Team; alternativa sem
+  custo é repositório público ou o GitHub Education (seção 3.3 do prompt).
 
 ## Documentação
 

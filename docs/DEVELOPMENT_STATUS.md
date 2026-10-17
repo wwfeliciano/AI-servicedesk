@@ -5,12 +5,14 @@ Andamento do projeto, recorte a recorte. Mais recente primeiro. O plano está em
 
 ## Situação atual (17/10/2026)
 
-- **Etapa vigente:** F0 — Fundação. Último recorte: **F0.3 — Banco** (concluído).
-  Próximo: **F0.4 — Qualidade e CI** (ruff/mypy/pytest com cobertura, GitHub Actions, template
-  de PR), aguardando o pedido do usuário.
+- **Etapa vigente:** F0 — Fundação. Último recorte: **F0.4 — Qualidade e CI** (concluído).
+  Próximo: **F0.5 — Front-end base** (Vite + React + Tailwind com os tokens da seção 8.2,
+  `AppShell` fiel ao protótipo, rotas com telas vazias, serviço `web` com Nginx), aguardando o
+  pedido do usuário.
 - **No ar:** `db`, `redis`, `s3` (MinIO), `mailpit`, `api` e `worker`, todos `healthy` (`make ps`).
   API em `http://127.0.0.1:8100` (dev). Banco com o esquema `0001` aplicado (`make migrate`).
-- **Repositório:** Git local na branch `develop`, sem remoto.
+- **Repositório:** Git local na branch `develop`, sem remoto. CI em `.github/workflows/ci.yml`
+  (GitHub Actions) pronto para rodar quando houver remoto.
 
 ## Pendências
 
@@ -24,6 +26,39 @@ Vão para [DECISOES.md](DECISOES.md) quando o código existir.
   base é o último recorte (F0.5).
 - **Etapas quebradas em recortes** (F0.1, F0.2...), no formato do GRH, com commit e relatório por
   recorte.
+
+---
+
+## F0.4 — Qualidade e CI (17/10/2026)
+
+- **Cobertura (pytest-cov):** `backend/pyproject.toml` com `addopts = "-q --cov=app
+  --cov-report=term-missing --cov-fail-under=50"`, `[tool.coverage.run]` (branch, `source = app`,
+  `omit` das migrations) e `[tool.coverage.report]` (`show_missing`, `exclude_also` para
+  `__main__`, `TYPE_CHECKING` e `NotImplementedError`). O piso é baixo de propósito nesta fase
+  (quase não há camada de serviço) e sobe quando os services da F1/F2 existirem; a meta final da
+  seção 12.1 é 90% em `services/` e 80% no total. O marcador `performance` foi mantido.
+- **GitHub Actions (`.github/workflows/ci.yml`):** dispara em `pull_request` para `develop`/`main`
+  e em `push` para essas branches. Job `backend` em `ubuntu-latest` com serviço PostgreSQL
+  `postgres:17.11-alpine` (health-check por `pg_isready`, porta `5432` publicada no runner).
+  Passos: `actions/checkout@v4`, `astral-sh/setup-uv@v6` (uv `0.13.1` fixado),
+  `actions/setup-python@v5` (3.13), `uv sync --frozen`, escrita de um `.env` mínimo apontando o
+  `PORTA_DB` para a porta do serviço (os testes leem esse `.env` para montar a URL do host),
+  `ruff check`, `ruff format --check`, `mypy app`, `alembic upgrade head` e `pytest`. Driver
+  `postgresql+psycopg`, `BCRYPT_CUSTO=4` para velocidade. Versões de ação fixadas (sem `@latest`).
+- **Template de PR (`.github/pull_request_template.md`):** PT-BR com resumo, requisitos/códigos
+  (RF/RNF/RN/UC/UJ/FA/FE/TU), o que foi testado e checklist (lint, testes com cobertura, ida e
+  volta de migration, `docker compose config`, sem dado pessoal real, docs atualizadas, prints
+  quando há tela).
+- **Makefile:** alvo `format` (`ruff format .`) somado ao `lint`/`test` já existentes.
+- **Documentação:** `README.md` (seção "Integração contínua e fluxo de branches", notas de
+  proteção de branch e menção à cobertura), `docs/ROADMAP.md` (F0.4 → concluído, F0.5 → próximo),
+  `docs/RASTREABILIDADE.md` (entrada de CI/qualidade) e este arquivo.
+- **Validação (host, com o PG de dev no ar):**
+  - `make lint` ok (ruff check, ruff format --check, mypy `strict`);
+  - `make test` 10 passaram, cobertura total 83,82% (piso de 50% atingido);
+  - `docker compose config` ok; `git diff --check` limpo;
+  - YAML do workflow validado localmente com `yaml.safe_load` (bem-formado). O workflow só executa
+    de fato no GitHub, quando houver remoto e um push/PR; aqui foi validada apenas a sintaxe.
 
 ---
 

@@ -6,7 +6,7 @@ UV := PATH="$(HOME)/.local/bin:$(PATH)" uv
 BACKEND := backend
 
 .DEFAULT_GOAL := help
-.PHONY: help env config up down ps logs lint test build migrate migration
+.PHONY: help env config up down ps logs lint format test build migrate migration
 
 help: ## Lista os alvos disponíveis
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -31,6 +31,9 @@ logs: ## Acompanha os logs (make logs s=db para um serviço)
 
 lint: ## Backend: ruff check, ruff format --check e mypy strict
 	cd $(BACKEND) && $(UV) run ruff check . && $(UV) run ruff format --check . && $(UV) run mypy app
+
+format: ## Backend: formata o código (ruff format)
+	cd $(BACKEND) && $(UV) run ruff format .
 
 test: ## Backend: pytest
 	cd $(BACKEND) && $(UV) run pytest

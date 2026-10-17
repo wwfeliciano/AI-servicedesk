@@ -64,7 +64,30 @@ ignore_missing_imports = true
 # ===== pytest =====
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+# Cobertura medida sobre `app` e reportada com as linhas sem cobertura
+# (term-missing). A meta (`--cov-fail-under`) sobe por fase: a seção 12.1 pede
+# 90% em `services/` e 80% no total, mas na F0.4 quase não há camada de serviço,
+# então o piso fica baixo de propósito e será elevado quando os services da F1/F2
+# existirem.
+addopts = "-q --cov=app --cov-report=term-missing --cov-fail-under=50"
 markers = [
     "performance: testes de desempenho (RNF02), rodados sob demanda",
+]
+
+# ===== cobertura (pytest-cov / coverage.py) =====
+[tool.coverage.run]
+branch = true
+source = ["app"]
+omit = [
+    # DDL literal da seção 5.2; validado pela ida e volta das migrations, não por cobertura de linha.
+    "app/migrations/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+# Exclui linhas que não fazem parte da lógica testável.
+exclude_also = [
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
 ]

@@ -1,0 +1,99 @@
+name: CI
+
+# Fluxo do Documento 02 (seção 12.4): feature/* -> PR para develop -> PR para main.
+# Roda a verificação do backend em cada PR e nos pushes para develop e main.
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+# Cancela execuções antigas do mesmo ref quando chega um push novo.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (ruff, mypy, pytest)
+    runs-on: ubuntu-latest
+
+    # PostgreSQL 17 real, como no ambiente de dev. O pytest lê o `.env` da raiz e
+    # monta a URL do host (127.0.0.1:PORTA_DB); por isso o `.env` do CI aponta o
+    # PORTA_DB para a porta publicada pelo serviço (5432).
+    services:
+      db:
+        image: postgres:17.11-alpine
+        env:
+          POSTGRES_DB: helpdesk
+          POSTGRES_USER: helpdesk
+          POSTGRES_PASSWORD: helpdesk
+          TZ: America/Sao_Paulo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U helpdesk -d helpdesk"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # A API usa o nome de serviço do Compose; o alembic upgrade head abaixo usa
+      # esta URL (127.0.0.1) porque roda no runner, fora da rede do Compose.
+      DATABASE_URL: postgresql+psycopg://helpdesk:helpdesk@127.0.0.1:5432/helpdesk
+      # bcrypt barato nos testes (seção 10.2 do .env.example).
+      BCRYPT_CUSTO: "4"
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instala o uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.1"
+
+      - name: Configura o Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Instala as dependências (inclui dev)
+        run: uv sync --frozen
+
+      - name: Escreve o .env que os testes leem (porta do serviço PostgreSQL)
+        working-directory: .
+        run: |
+          cat > .env <<'EOF'
+          AMBIENTE=dev
+          LOG_LEVEL=WARNING
+          POSTGRES_DB=helpdesk
+          POSTGRES_USER=helpdesk
+          POSTGRES_PASSWORD=helpdesk
+          PORTA_DB=5432
+          DATABASE_URL=postgresql+psycopg://helpdesk:helpdesk@127.0.0.1:5432/helpdesk
+          REDIS_URL=redis://localhost:6379/0
+          BCRYPT_CUSTO=4
+          EOF
+
+      - name: ruff check
+        run: uv run ruff check .
+
+      - name: ruff format --check
+        run: uv run ruff format --check .
+
+      - name: mypy (strict)
+        run: uv run mypy app
+
+      - name: Aplica as migrations (alembic upgrade head)
+        run: uv run alembic upgrade head
+
+      - name: pytest (com cobertura)
+        run: uv run pytest
