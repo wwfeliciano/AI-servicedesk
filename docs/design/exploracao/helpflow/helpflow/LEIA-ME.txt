@@ -1,0 +1,19 @@
+HELPFLOW — DEMONSTRAÇÃO
+
+1. Extraia todos os arquivos deste ZIP para uma pasta.
+2. Abra index.html no navegador. Não precisa instalar dependências.
+
+Arquivos:
+- index.html: estrutura da página
+- styles.css: estilos e responsividade
+- app.js: interações, chamados e atendimento simulado
+
+A IA/RAG é simulada com três artigos de exemplo. Não há backend, autenticação ou chamada a uma API.
+Os chamados ficam salvos apenas no navegador; se o armazenamento local estiver bloqueado, ficam disponíveis apenas na sessão.
+Anexos registram somente o nome do arquivo, sem enviar seu conteúdo.
+
+A interface usa fontes do sistema e funciona sem conexão à internet.
+
+Para servir por HTTP (opcional), execute na pasta:
+python3 -m http.server 8080
+Depois acesse http://localhost:8080

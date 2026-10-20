@@ -31,9 +31,18 @@ FabricaSessao: sessionmaker[Session] = sessionmaker(
 
 
 def obter_sessao() -> Iterator[Session]:
-    """Dependência do FastAPI: uma sessão por requisição, sempre fechada no fim."""
+    """Dependência do FastAPI: uma sessão por requisição.
+
+    Faz `commit()` quando a requisição termina sem erro e `rollback()` se o handler
+    (ou a dependência) levanta exceção. Sem isso, os `flush()` dos services não são
+    persistidos e a transação é desfeita ao fechar a sessão.
+    """
     sessao = FabricaSessao()
     try:
         yield sessao
+        sessao.commit()
+    except Exception:
+        sessao.rollback()
+        raise
     finally:
         sessao.close()

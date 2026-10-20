@@ -53,7 +53,7 @@ Lacunas ou conflitos: aplique o padrão da seção 14, registre em `docs/DECISOE
 | Backend | Python 3.13 · FastAPI · Pydantic v2 · pydantic-settings · Uvicorn · SQLAlchemy 2.0 (síncrono) + psycopg 3 · Alembic · PyJWT · bcrypt · python-multipart · filetype · boto3 · redis-py · httpx · Typer | MIT, BSD, Apache-2.0, LGPL (psycopg) |
 | Qualidade backend | uv · Ruff · mypy · pytest · pytest-cov · moto · fakeredis · Faker | MIT, Apache-2.0, BSD |
 | Front-end | TypeScript · React 19 · Vite · React Router 7 · TanStack Query 5 · Zustand · React Hook Form + Zod · Tailwind CSS 4 · shadcn/ui (Radix) · lucide-react · date-fns · openapi-typescript + openapi-fetch · sonner · qrcode | MIT, ISC, Apache-2.0 |
-| Fontes | Inter e Outfit via `@fontsource`, auto-hospedadas (sem CDN) | OFL-1.1 |
+| Fontes | IBM Plex Sans e IBM Plex Mono via `@fontsource`, auto-hospedadas (sem CDN) | OFL-1.1 |
 | Testes front | Vitest · Testing Library · MSW · Playwright | MIT, Apache-2.0 |
 | Banco | PostgreSQL 17 + extensões `pg_trgm` e `unaccent` | PostgreSQL |
 | Estado efêmero | Redis 8 (ou Valkey 8, substituto direto) | AGPLv3 (Valkey: BSD) |
@@ -378,16 +378,19 @@ CREATE INDEX ix_base_conhecimento_busca ON base_conhecimento USING gin (busca);
 
 ### 6.1 Equivalência de termos (Documento 01) e cores dos badges
 
-| Rótulo na tela | Valor no banco | Badge (fundo / texto) |
+| Rótulo na tela | Valor no banco | Badge (texto / token) |
 |---|---|---|
-| Aberto | `NOVO`, `PENDENTE` | `#EFF6FF` / `#2563EB` |
-| Em andamento | `ATRIBUIDO` | `#FFFBEB` / `#D97706` |
-| Resolvido | `CONCLUIDO` | `#F0FDF4` / `#16A34A` |
-| Encerrado | `FECHADO` | `#F1F5F9` / `#475569` |
-| Baixa | `BAIXA` | `#F0FDF4` / `#16A34A` |
-| Média | `MEDIA` | `#EFF6FF` / `#2563EB` |
-| Alta | `ALTA` | `#FFF7ED` / `#EA580C` |
-| Urgente | `CRITICO` | `#FEF2F2` / `#DC2626`, com ícone de sirene |
+| Aberto | `NOVO`, `PENDENTE` | `--info` `#2563EB` (fundo `info-soft`) |
+| Em andamento | `ATRIBUIDO` | `--warning` `#C77700` (fundo `warning-soft`) |
+| Resolvido | `CONCLUIDO` | `--success` `#16885B` (fundo `success-soft`) |
+| Encerrado | `FECHADO` | `--secondary` `#475569` (fundo neutro) |
+| Baixa | `BAIXA` | `--success` `#16885B` |
+| Média | `MEDIA` | `--info` `#2563EB` |
+| Alta | `ALTA` | `--warning` `#C77700` |
+| Urgente | `CRITICO` | `--danger` `#D13B4A`, com ícone de sirene |
+
+As cores saem da paleta Foundations (seção 8.2); os fundos suaves (`*-soft`) e as variantes do tema
+escuro ficam nos tokens do Tailwind. O badge sempre traz o rótulo em texto (acessibilidade).
 
 Grupos usados nas abas e nos indicadores:
 
@@ -581,27 +584,47 @@ Filtros extras para ANALISTA e ADMIN (F4): `responsavel=eu|nenhum|{id}`, `severi
 - Datas com `date-fns`, locale `pt-BR` e fuso `America/Sao_Paulo`: `dd/MM/yy` nos cards; tempo relativo curto no Dashboard (`agora`, `5 min atrás`, `2 h atrás`, `15 d atrás`).
 - Desenvolvimento: `npm run dev` com proxy `/api → http://localhost:8000`. Produção: build estático servido pelo Nginx do container `web`.
 
-### 8.2 Identidade visual (extraída das capturas do protótipo)
+### 8.2 Identidade visual (design system "Foundations" do esboço)
 
-Tokens definidos no `@theme` do Tailwind 4 (variáveis CSS):
+A identidade do Mentory é **herdada do esboço aprovado** (coleção "01 — Foundations", ex-HelpFlow;
+ver `docs/design/mentory/` e o ADR em `docs/DECISOES.md`). Fonte da verdade da identidade: a tela
+Foundations do esboço. Marca **teal/petróleo**, tipografia **IBM Plex Sans**, sidebar **branca**,
+superfícies com borda de 1px e sombras discretas, e **tema claro e escuro** (o escuro deriva da
+mesma paleta).
 
-| Token | Valor | Uso |
+Tokens definidos no `@theme` do Tailwind 4 (variáveis CSS). Cores base (tema claro):
+
+| Token (esboço) | Valor | Uso |
 |---|---|---|
-| `--cor-sidebar` | `#0F1929` | Menu lateral e painel esquerdo do login |
-| `--cor-sidebar-ativo` | `#162848` | Item ativo do menu |
-| `--cor-destaque` | `#3B82F6` | Barra do item ativo e links ("Esqueci minha senha", "Ver todos") |
-| `--cor-primaria` | `#1B3F7E` | Botões primários, etapa ativa, aba ativa, logo |
-| `--cor-primaria-suave` | `#E8EDF7` | Botões secundários (Voltar), ações rápidas, chip de filtro ativo |
-| `--cor-neutra-suave` | `#E4E8F2` | Chips de categoria, contadores das abas, etapas futuras |
-| `--cor-fundo` | `#F0F2F7` | Fundo das páginas e dos cards de opção |
-| `--cor-superficie` | `#FFFFFF` | Cards |
-| `--cor-sucesso` | `#16A34A` | Etapa concluída, "Resolvido", "Baixa" |
-| `--cor-perigo` | `#DC2626` | Alerta de urgência, botão "Ver agora", "Urgente" |
-| `--cor-notificacao` | `#EF4444` | Contador de notificações |
+| `--brand-600` | `#066873` | Primária: botões, logo, item ativo do menu, foco |
+| `--brand-500` | `#087F8C` | Acento/eyebrow, realces e hover de marca |
+| `--canvas` | `#F8FAFC` | Fundo das páginas |
+| `--surface` | `#FFFFFF` | Cards, sidebar, topbar |
+| `--text` | `#0B1220` | Texto principal (tinta) |
+| `--secondary` | `#475569` | Texto secundário, rótulos, breadcrumb |
+| `--success` | `#16885B` | "Resolvido", severidade "Baixa", status operacional |
+| `--warning` | `#C77700` | "Em andamento", severidade "Alta" |
+| `--danger` | `#D13B4A` | Alerta de urgência, severidade "Urgente", notificação |
+| `--info` | `#2563EB` | "Aberto", severidade "Média", links informativos |
 
-- Tipografia: **Outfit** nos títulos (600/700) e **Inter** no texto (400/500/600), auto-hospedadas via `@fontsource`.
-- Cantos de 12 a 16 px nos cards e de 8 a 10 px em botões e campos; sombras discretas; ícones de linha (`lucide-react`) no menu; emojis das categorias vindos de `categorias.icone`.
-- Badge sempre com texto, nunca só cor (acessibilidade).
+- **Item ativo do menu:** pílula teal-clara (`brand-soft` ≈ `#EAF4F4`) com texto `--brand-600` — a
+  sidebar é **branca**, não escura.
+- **Tipografia:** **IBM Plex Sans** (400/500/600/700), auto-hospedada via `@fontsource`. Escala do
+  esboço: `Display/XL` (hero), `Heading/H1`, `Heading/H2`, `Body/MD`, `Label/SM` (caixa alta, com
+  tracking). Monoespaçada (IBM Plex Mono) para protocolo (`TK-0051`) e números tabulares.
+- **Forma e espaçamento:** raios `6 · 10 · 14 · 20 · full`; escala de espaço `4 · 8 · 12 · 16 · 20
+  · 24 · 32 · 40 · 48 · 64`; ícones `16 · 20 · 24` (linha, `lucide-react`); breakpoints `390`
+  (mobile) · `768` (tablet) · `1440` (desktop).
+- **Tema escuro:** derivado da paleta (canvas ≈ `#0A1114`, surface ≈ `#0F181C`, brand clareada
+  para contraste AA). Alternância por `data-theme` / `prefers-color-scheme`; persistir a escolha.
+- **Badge sempre com texto, nunca só cor** (acessibilidade). As cores semânticas dos estados
+  (seção 6.1) usam esta paleta: `--info` (Aberto/Média), `--warning` (Em andamento/Alta),
+  `--success` (Resolvido/Baixa), `--secondary` neutro (Encerrado), `--danger` (Urgente).
+
+> **Assistente de IA/RAG:** faz parte da **visão final do produto** (está na identidade: item de
+> menu "Assistente IA", hero conversacional e card de apoio). A **implementação é de fase futura**
+> — o núcleo de chamados vem primeiro. Nas telas das fases atuais, a entrada de IA aparece marcada
+> como "em breve"/desabilitada.
 
 ### 8.3 Componentes base
 
@@ -610,7 +633,7 @@ Tokens definidos no `@theme` do Tailwind 4 (variáveis CSS):
 ### 8.4 Telas
 
 **Login** (`/login` — RNF01, UJ01, FE01, FA02)
-- Painel esquerdo escuro (oculto no celular): logo, "Suporte que resolve de verdade.", texto de apoio e três cartões: Resposta rápida, Notificações em tempo real e Histórico completo.
+- Painel esquerdo na cor da marca (teal, oculto no celular): logo "Mentory", "Suporte que resolve de verdade.", texto de apoio e três cartões: Resposta rápida, Acompanhamento e Histórico completo.
 - Formulário: "Bem-vindo de volta", e-mail corporativo, senha (mostrar/ocultar), link "Esqueci minha senha" (funcional na F7; antes disso, mostra "Contate o TI"), botão "Entrar no sistema", divisor "ou", "Entrar com Google Workspace" (só aparece se `google_sso` for verdadeiro) e "Problemas com acesso? Contate o TI" (`wa.me/<número>` ou `mailto:`).
 - FE01: mensagem genérica "E-mail ou senha inválidos", sem dizer qual campo errou; o e-mail continua preenchido. Em `429`: "Muitas tentativas. Aguarde alguns minutos."
 
@@ -620,6 +643,8 @@ Tokens definidos no `@theme` do Tailwind 4 (variáveis CSS):
 - Quatro indicadores (`/resumo`): Abertos, Em andamento, Resolvidos e Urgentes.
 - "Chamados recentes" (os 5 últimos): protocolo, título, severidade, categoria, tempo relativo, "→ responsável" e status; link "Ver todos →".
 - "Ações rápidas": Abrir novo chamado, Base de conhecimento e Ver histórico.
+- Entrada do **Assistente IA** (visão de produto): hero conversacional ("Como podemos ajudar hoje?")
+  e card de apoio na coluna direita, marcados "em breve"/desabilitados até a fase de IA.
 - "SLA do mês": aparece só a partir da F7.
 - ANALISTA e ADMIN (F4): indicadores da fila geral e atalho "Sem responsável".
 
@@ -1098,6 +1123,34 @@ make build               # build do backend e do frontend sem erros
 - [ ] Checklist da seção 11 conferido.
 - [ ] Deploy documentado no README.
 
+### Fase 8 — Assistente de IA (Mentory AI, RAG) — visão final do produto
+
+Esta é a **visão final do produto** (ADR 2026-10-17): o item de menu "Assistente IA", o hero
+conversacional e o card de apoio deixam de ser "em breve" e passam a funcionar. O detalhe técnico
+está na **seção 16**; a arquitetura espelha, em Python, o desenho validado do plugin
+`aiservicedesk` (provider abstraction, fallback de modelo e de provedor, orçamento de tempo,
+degradação e RAG sobre a Base de Conhecimento). O núcleo de chamados (F0–F7) vem antes — e já veio.
+
+**Entregas:** migration `0009` (`ia_config`, `ia_conversas`, `ia_mensagens`, `ia_uso`;
+`base_conhecimento.embedding` para o RAG); camada `app/ia/` (contratos neutros + providers +
+registry + política de fallback); `IaService` (fachada) e `OrquestradorIa` (laço de ferramentas);
+RAG sobre a Base de Conhecimento (embedding + busca semântica, com _fallback_ para o full-text da
+F5); ferramentas seguras (buscar na base, consultar/abrir chamado — reusando os services, nunca SQL
+solto); `POST /api/ia/conversas` e `POST /api/ia/conversas/{id}/mensagens` (SSE opcional); tela do
+Assistente (hero conversacional + chat) e `/admin/ia` (provedor, modelo, chave, cadeia de fallback,
+teste de conexão, consumo). Chave do provedor cifrada no banco, nunca em log/resposta.
+
+**DoD**
+- [ ] Com um provedor configurado (ex.: Gemini via endpoint OpenAI-compatible), o assistente
+      responde uma dúvida citando artigos reais da Base de Conhecimento (RAG).
+- [ ] Fallback de modelo (429/503 do Gemini) e de provedor (cadeia) exercitados em teste, com
+      orçamento de tempo respeitado; degradação de imagem/ferramentas sem derrubar a conversa.
+- [ ] Nenhuma regra de negócio na ferramenta: abrir/consultar chamado passa pelos services (RN04,
+      RN06) e pelas permissões do usuário autenticado.
+- [ ] A chave do provedor nunca aparece em log, resposta HTTP ou mensagem de erro; `/admin/ia`
+      valida a conexão com uma chamada mínima.
+- [ ] `make lint`/`make test` e o front verdes; a tela do Assistente sai do estado "em breve".
+
 ## 14. Decisões em aberto (padrões adotados até o PO validar)
 
 | Tema | Padrão adotado | Motivo ou alternativa |
@@ -1127,6 +1180,106 @@ make build               # build do backend e do frontend sem erros
 **Pendências e riscos:** (lista)
 **Próxima fase:** (resumo)
 ```
+
+---
+
+## 16. Assistente de IA (Mentory AI, RAG) — Fase 8
+
+> Esta seção descreve a **visão final do produto**. Vale a regra de sempre: um recorte por vez,
+> backend antes do front, e nada de regra de negócio em controller, componente de UI ou provedor.
+
+### 16.1 Princípios
+
+- **IA é um canal de atendimento, não um atalho que fura regra.** Abrir, consultar e responder
+  chamado pela IA passa **pelos mesmos services** (RN04, RN06, RN01–RN03) e pelas permissões do
+  usuário autenticado. A IA nunca executa SQL solto nem contorna o escopo do perfil.
+- **Uma única fronteira conhece o protocolo do fornecedor.** O resto do sistema fala com `IaService`;
+  trocar OpenAI ↔ Gemini ↔ Groq ↔ Ollama é só configuração. Providers são **sem estado**: a config
+  chega por argumento (testáveis sem tocar no banco).
+- **Degradar em vez de falhar.** Sem suporte a imagem ou a ferramentas, a conversa continua com o
+  texto. Trocar de provedor nunca derruba o atendimento.
+- **Segredo é segredo.** A chave do provedor é cifrada no banco (`core/seguranca`), decifrada só em
+  memória, e **nunca** aparece em log, resposta HTTP ou mensagem de erro (redigir antes de truncar).
+- **Minimização e rastreio (LGPD).** Guardar o mínimo da conversa; gravar métricas de token desde o
+  início (base dos relatórios de consumo). Respostas citam a fonte (artigo da base) quando houver.
+
+### 16.2 Camadas (`app/ia/`)
+
+Espelha o desenho validado do `aiservicedesk` (ver `/home/ubuntu/ai-assistant`), em Python:
+
+```text
+app/ia/
+├── contratos.py        # IaRequest, IaResposta, IaMensagem, ParteConteudo, DefinicaoFerramenta, PedidoFerramenta (neutros)
+├── config.py           # IaConfig (provider, api_url, model, api_key, timeout, max_output_tokens); __repr__ oculta a chave
+├── erros.py            # ErroIa: classifica a falha e decide o fallback (reason + deve_tentar_outro_modelo/provedor)
+├── provedores/
+│   ├── base.py         # ProvedorIa (Protocol): get_chave/rotulo/url_padrao, suporta_imagens/ferramentas, gerar()
+│   ├── openai_compat.py# Provedor OpenAI-compatible (httpx): OpenAI, Gemini, Groq, OpenRouter, Ollama, vLLM, LM Studio
+│   ├── groq.py · openrouter.py · cloudflare.py  # composição sobre o openai_compat (default model + capacidades + rótulo)
+│   └── anthropic.py    # protocolo próprio (quando houver chave)
+├── registro.py         # RegistroProvedores: catálogo; adicionar provedor = classe + 1 linha
+├── fallback.py         # PoliticaFallbackModelo: modelos Gemini free quando a API Gemini responde 429/503
+├── rag.py              # RagService: embedding da pergunta + busca semântica na base (fallback full-text F5)
+└── ferramentas/        # FerramentaBuscarBase, FerramentaConsultarChamado, FerramentaAbrirChamado (reusam os services)
+```
+
+Serviços de orquestração em `app/services/ia/`:
+
+- **`IaService`** — fachada. `gerar(IaRequest)` percorre a **cadeia de provedores** (config + cadeia
+  de fallback); em cada provedor, aplica a **degradação** e o **fallback de modelo** por dentro.
+- **`OrquestradorIa`** — laço de ferramentas: oferece as ferramentas, executa as que o modelo pedir
+  (validando permissão no Python), devolve o resultado e segue até o modelo responder em texto ou
+  bater o teto de rodadas (então força uma resposta final sem ferramentas).
+- **`RagService`** — monta o contexto: recupera os artigos mais relevantes da Base de Conhecimento e
+  injeta no prompt de sistema; a resposta cita os artigos usados.
+
+### 16.3 Fallback (dois níveis, por motivo da falha)
+
+A decisão vem da **classificação do erro** em `ErroIa.motivo`:
+
+| Motivo | Troca de MODELO? | Troca de PROVEDOR? | Exemplo |
+|---|---|---|---|
+| `limite_de_taxa` (429) | sim | sim | cota/minuto estourada |
+| `erro_servidor` (5xx) | sim | sim | Gemini 503 "high demand" |
+| `tempo_esgotado` (timeout) | sim | sim | provedor lento |
+| `inacessivel` (rede) | **não** | sim | host fora do ar (trocar modelo na mesma URL não adianta) |
+| `nao_autorizado` (401/403) | não | **não** | credencial recusada → é defeito de config, tem de aparecer |
+| `erro_cliente` (400) | não | **não** | requisição malformada |
+
+- **Fallback de modelo** (`PoliticaFallbackModelo`): só para a **Gemini Developer API**
+  (`generativelanguage.googleapis.com` via `openai_compat`). Tenta o modelo configurado primeiro;
+  depois, uma lista de modelos Gemini com camada gratuita. **Nada persistido muda.**
+- **Fallback de provedor**: percorre a cadeia configurada em `/admin/ia`.
+- **Orçamento de tempo**: o conjunto de tentativas de modelo cabe em `timeout × 2` (não `timeout`
+  por modelo); o 1º candidato sai com o prazo cheio, os demais com o tempo restante, descartados se
+  sobrar menos que ~5 s. Evita que o fallback vire bomba de latência.
+- **Streaming (SSE, opcional)**: depois de emitir texto, **não** troca de modelo/provedor (evita
+  resposta "costurada"); conexão que morre sem `[DONE]` vira `finish_reason = interrompido`.
+
+### 16.4 Dados (migration 0009)
+
+- `ia_config`: provedor, `api_url`, `model`, `api_key_cifrada`, `timeout`, `max_output_tokens` e a
+  **cadeia de fallback** (JSONB). Chave cifrada; nunca serializada.
+- `ia_conversas` / `ia_mensagens`: histórico por usuário (papel, conteúdo, `tool_calls`, tokens,
+  `finish_reason`), com retenção mínima.
+- `ia_uso`: métricas de consumo (tokens de entrada/saída, duração, provedor, modelo) por chamada.
+- `base_conhecimento.embedding`: vetor do artigo para o RAG. Em dev, sem servidor de embeddings
+  dedicado, o RAG cai para a **busca full-text `pt_br_unaccent` da F5** — degradação, não falha.
+
+### 16.5 API e segurança
+
+- `POST /api/ia/conversas` (cria) · `POST /api/ia/conversas/{id}/mensagens` (envia; SSE opcional) —
+  autenticado; o escopo do usuário vale dentro das ferramentas.
+- `GET`/`PUT /api/admin/ia` (ADMIN): provedor, modelo, chave, cadeia de fallback; `POST
+  /api/admin/ia/testar` faz uma chamada mínima ("ping") que prova credencial, URL, modelo e rede.
+- Config pública (`/api/config/publica`) ganha `ia_habilitada` (só liga a tela do Assistente quando
+  há provedor configurado) — mesmo padrão do `google_sso`.
+
+### 16.6 Recortes (ver ROADMAP, F8)
+
+F8.1 camada de provedores + fallback (sem UI) · F8.2 orquestrador + ferramentas seguras ·
+F8.3 RAG sobre a Base de Conhecimento · F8.4 API de conversa + persistência · F8.5 `/admin/ia`
+(config + teste + consumo) · F8.6 tela do Assistente (hero + chat) e saída do estado "em breve".
 
 ---
 

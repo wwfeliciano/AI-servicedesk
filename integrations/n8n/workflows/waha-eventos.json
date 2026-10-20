@@ -1,0 +1,110 @@
+{
+  "name": "Mentory — WAHA eventos (entrada do bot)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-eventos",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-waha",
+      "name": "Webhook WAHA",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "waha-eventos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "message",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "leftValue": "={{ $json.body.payload.fromMe }}",
+              "rightValue": "={{ false }}",
+              "operator": { "type": "boolean", "operation": "equals" }
+            },
+            {
+              "leftValue": "={{ $json.body.payload.from }}",
+              "rightValue": "@g.us",
+              "operator": { "type": "string", "operation": "notContains" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filtra-mensagens",
+      "name": "So mensagens de pessoas",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "notes": "Descarta fromMe, grupos (@g.us), status@broadcast e @newsletter."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://api:8000/api/integracoes/whatsapp/mensagens",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Integracao-Chave", "value": "={{ $env.INTEGRACAO_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "jsonBody": "={{ { \"message_id\": $json.body.payload.id, \"chat_id\": $json.body.payload.from, \"lid\": ($json.body.payload.from.endsWith('@lid') ? $json.body.payload.from : null), \"numero\": $json.body.payload.from.split('@')[0], \"texto\": ($json.body.payload.body || ''), \"tem_midia\": ($json.body.payload.hasMedia || false), \"timestamp\": $json.body.payload.timestamp } }}",
+        "options": {}
+      },
+      "id": "chama-api",
+      "name": "Chama a API (bot)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "respostas",
+        "options": {}
+      },
+      "id": "split-respostas",
+      "name": "Separa respostas",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://waha:3000/api/sendText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Api-Key", "value": "={{ $env.WAHA_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "jsonBody": "={{ { \"session\": \"default\", \"chatId\": $('Webhook WAHA').item.json.body.payload.from, \"text\": $json.texto } }}",
+        "options": {}
+      },
+      "id": "responde-waha",
+      "name": "Responde pelo WAHA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300],
+      "notes": "Em produção, inserir startTyping → espera 1-3s → sendText → stopTyping (anti-bloqueio)."
+    }
+  ],
+  "connections": {
+    "Webhook WAHA": { "main": [[{ "node": "So mensagens de pessoas", "type": "main", "index": 0 }]] },
+    "So mensagens de pessoas": { "main": [[{ "node": "Chama a API (bot)", "type": "main", "index": 0 }]] },
+    "Chama a API (bot)": { "main": [[{ "node": "Separa respostas", "type": "main", "index": 0 }]] },
+    "Separa respostas": { "main": [[{ "node": "Responde pelo WAHA", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}

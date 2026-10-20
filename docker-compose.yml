@@ -122,6 +122,32 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       REDIS_PREFIXO: ${REDIS_PREFIXO:-mentory:}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_MINUTOS: ${JWT_ACCESS_MINUTOS:-30}
+      JWT_REFRESH_DIAS: ${JWT_REFRESH_DIAS:-7}
+      BCRYPT_CUSTO: ${BCRYPT_CUSTO:-12}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      # Config pública (GET /api/config/publica) e primeiro admin (make criar-admin)
+      WHATSAPP_NUMERO_SUPORTE: ${WHATSAPP_NUMERO_SUPORTE:-}
+      EMAIL_SUPORTE: ${EMAIL_SUPORTE:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      ADMIN_NOME: ${ADMIN_NOME:-Administrador}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@empresa.com.br}
+      ADMIN_SENHA: ${ADMIN_SENHA:-}
+      # S3 (MinIO) para os anexos (F3)
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-http://s3:9000}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGIAO: ${S3_REGIAO:-us-east-1}
+      S3_BUCKET_ANEXOS: ${S3_BUCKET_ANEXOS:-mentory-anexos}
+      S3_BUCKET_BACKUPS: ${S3_BUCKET_BACKUPS:-mentory-backups}
+      ANEXOS_MAX_MB: ${ANEXOS_MAX_MB:-10}
+      ANEXOS_MAX_POR_CHAMADO: ${ANEXOS_MAX_POR_CHAMADO:-5}
+      # Canais externos (F6): chave do n8n→API e preferências do outbox
+      INTEGRACAO_API_KEY: ${INTEGRACAO_API_KEY:-}
+      OUTBOX_HABILITADO: ${OUTBOX_HABILITADO:-false}
+      N8N_WEBHOOK_NOTIFICACOES_URL: ${N8N_WEBHOOK_NOTIFICACOES_URL:-}
+      N8N_WEBHOOK_TOKEN: ${N8N_WEBHOOK_TOKEN:-}
     depends_on:
       db:
         condition: service_healthy
@@ -159,6 +185,11 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       REDIS_PREFIXO: ${REDIS_PREFIXO:-mentory:}
+      PORTAL_URL: ${PORTAL_URL:-http://localhost:8180}
+      # Despacho do outbox ao n8n (F6.2); off por padrão
+      OUTBOX_HABILITADO: ${OUTBOX_HABILITADO:-false}
+      N8N_WEBHOOK_NOTIFICACOES_URL: ${N8N_WEBHOOK_NOTIFICACOES_URL:-}
+      N8N_WEBHOOK_TOKEN: ${N8N_WEBHOOK_TOKEN:-}
     depends_on:
       redis:
         condition: service_healthy
@@ -182,10 +213,122 @@ services:
           cpus: "0.25"
           memory: 256m
 
+  web:
+    # SPA (Vite/React) servida pelo Nginx; faz proxy de /api para a api (F0.5).
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - interna
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128m
+
+  n8n:
+    # Automação (F6): recebe eventos do outbox/WAHA, chama a API e envia e-mail (SMTP)
+    # e WhatsApp (WAHA). Imagem Community fixada, com suporte ARM64. Sem recursos
+    # Enterprise (Variables/SSO/Source Control etc.), conforme a licença (seção 3).
+    image: n8nio/n8n:2.34.4
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+      GENERIC_TIMEZONE: ${TZ:-America/Sao_Paulo}
+      # Banco: Postgres do projeto (base/usuário criados pelo infra/postgres/init/01-n8n.sh)
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: db
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME:-n8n}
+      DB_POSTGRESDB_USER: ${N8N_DB_USER:-n8n}
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_PORT: 5678
+      WEBHOOK_URL: ${WEBHOOK_URL:-http://localhost:5678/}
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_HIRING_BANNER_ENABLED: "false"
+      N8N_RUNNERS_ENABLED: "true"
+      # SMTP do n8n (em dev aponta para o Mailpit; em prod, credencial real)
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USUARIO:-}
+      SMTP_PASS: ${SMTP_SENHA:-}
+      SMTP_SENDER: ${SMTP_REMETENTE:-helpdesk@empresa.com.br}
+      # Chaves compartilhadas com a API (header dos webhooks)
+      N8N_WEBHOOK_TOKEN: ${N8N_WEBHOOK_TOKEN:-}
+      INTEGRACAO_API_KEY: ${INTEGRACAO_API_KEY:-}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - interna
+    healthcheck:
+      test:
+        ["CMD-SHELL",
+         "wget -qO- http://127.0.0.1:5678/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1g
+
+  waha:
+    # WhatsApp HTTP API (F6): mantém a sessão (QR), envia e recebe mensagens.
+    # Imagem pública gratuita (Apache-2.0); tag ARM para o servidor Ampere.
+    image: devlikeapro/waha:arm-2026.4.3
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+      WHATSAPP_API_KEY: ${WAHA_API_KEY}
+      WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USERNAME:-admin}
+      WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
+      WHATSAPP_SWAGGER_USERNAME: ${WHATSAPP_SWAGGER_USERNAME:-admin}
+      WHATSAPP_SWAGGER_PASSWORD: ${WHATSAPP_SWAGGER_PASSWORD}
+      WHATSAPP_DEFAULT_ENGINE: ${WHATSAPP_DEFAULT_ENGINE:-WEBJS}
+      # Webhook: o WAHA entrega os eventos ao n8n (seção 9.3)
+      WHATSAPP_HOOK_URL: ${WHATSAPP_HOOK_URL:-http://n8n:5678/webhook/waha-eventos}
+      WHATSAPP_HOOK_EVENTS: ${WHATSAPP_HOOK_EVENTS:-message,session.status}
+    volumes:
+      - waha_data:/app/.sessions
+    networks:
+      - interna
+    healthcheck:
+      test:
+        ["CMD-SHELL",
+         "wget -qO- http://127.0.0.1:3000/ping >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1g
+
 volumes:
   pg_data:
   redis_data:
   s3_data:
+  n8n_data:
+  waha_data:
 
 networks:
   interna:

@@ -5,8 +5,10 @@
 - `test_migrations_ida_e_volta`: `upgrade head → downgrade base → upgrade head`,
   provando que o `downgrade()` reverte tudo (tabelas, tipos, função e extensões).
 
-Ambos pulam (`skip`) se o banco não estiver no ar. Não fixam ids: as sequências
-`IDENTITY` não voltam no rollback (seção 6, armadilhas).
+Ambos pulam (`skip`) se o banco não estiver no ar. Rodam num **banco de teste dedicado**
+(`<POSTGRES_DB>_test`, criado sob demanda pelo conftest), para a ida e volta destrutiva nunca
+tocar os dados de desenvolvimento (AJ-002). Não fixam ids: as sequências `IDENTITY` não voltam
+no rollback (seção 6, armadilhas).
 """
 
 from __future__ import annotations
@@ -88,6 +90,7 @@ def test_conexao_banco() -> None:
         engine.dispose()
 
 
+@pytest.mark.lento
 def test_migrations_ida_e_volta() -> None:
     url = _banco_ou_skip()
     cfg = _config_alembic(url)

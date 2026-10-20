@@ -41,6 +41,30 @@ class StatusAprovacao(str, enum.Enum):
     REJEITADO = "REJEITADO"
 
 
+class CanalNotificacao(str, enum.Enum):
+    """Canal de saída de um evento do outbox (seção 9.2). O portal não entra aqui:
+    é gravado em `notificacoes`, não em `eventos_outbox`."""
+
+    WHATSAPP = "WHATSAPP"
+    EMAIL = "EMAIL"
+
+
+class StatusOutbox(str, enum.Enum):
+    """Ciclo de vida de um evento do outbox (seção 9.2)."""
+
+    PENDENTE = "PENDENTE"
+    PROCESSANDO = "PROCESSANDO"
+    ENVIADO = "ENVIADO"
+    FALHOU = "FALHOU"
+
+
+class CanalOrigem(str, enum.Enum):
+    """Por onde o chamado foi aberto (seção 5.3). Padrão PORTAL; o bot abre WHATSAPP."""
+
+    PORTAL = "PORTAL"
+    WHATSAPP = "WHATSAPP"
+
+
 # Nome do tipo igual ao do SQL; os valores gravados são os `.value` dos membros.
 # create_type=False: o ciclo de vida do tipo é da migration, não do metadata.
 perfil_usuario_enum = ENUM(
@@ -64,6 +88,24 @@ status_chamado_enum = ENUM(
 status_aprovacao_enum = ENUM(
     StatusAprovacao,
     name="status_aprovacao",
+    create_type=False,
+    values_callable=lambda membros: [m.value for m in membros],
+)
+canal_notificacao_enum = ENUM(
+    CanalNotificacao,
+    name="canal_notificacao",
+    create_type=False,
+    values_callable=lambda membros: [m.value for m in membros],
+)
+status_outbox_enum = ENUM(
+    StatusOutbox,
+    name="status_outbox",
+    create_type=False,
+    values_callable=lambda membros: [m.value for m in membros],
+)
+canal_origem_enum = ENUM(
+    CanalOrigem,
+    name="canal_origem",
     create_type=False,
     values_callable=lambda membros: [m.value for m in membros],
 )

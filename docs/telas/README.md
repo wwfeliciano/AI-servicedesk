@@ -7,6 +7,9 @@ O que cada tela faz e **por que faz assim**. Descreve só o que existe; o planej
 
 | Arquivo | Cobre |
 |---|---|
+| [01-acesso.md](01-acesso.md) | Login, Perfil e Administração de usuários (F1.3) |
+| [02-chamados.md](02-chamados.md) | Dashboard, Novo Chamado, Meus Chamados, Detalhe e anexos (F2.4, F3.3) |
+| [03-notificacoes.md](03-notificacoes.md) | Tela de Notificações e contador no menu (F3.3) |
 | [HISTORICO.md](HISTORICO.md) | Mudanças de comportamento, com o commit de cada uma |
 
 Um arquivo por grupo de telas entra quando a primeira tela do grupo for entregue (por exemplo,

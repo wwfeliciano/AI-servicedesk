@@ -1,0 +1,42 @@
+# Publicação de TESTE externo em https://help.wwftech.com.br (Cloudflare Tunnel → Traefik).
+# Não é a produção da F7 (docker-compose.prod.yml): só liga o "web" à rede "proxy" do
+# Traefik por cima do ambiente de dev. db, redis, s3, n8n e waha seguem só na rede interna.
+#
+#   make publicar        # sobe com este arquivo
+#   make despublicar     # volta ao dev só em 127.0.0.1
+#
+# Requer a rede externa "proxy" (criada pela infraestrutura do servidor).
+
+services:
+  web:
+    networks:
+      - interna
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.mentory-help.rule=Host(`help.wwftech.com.br`)"
+      - "traefik.http.routers.mentory-help.entrypoints=web"
+      - "traefik.http.routers.mentory-help.service=mentory-help"
+      - "traefik.http.services.mentory-help.loadbalancer.server.port=8080"
+      # Swagger/OpenAPI do dev não fica exposto: a allowlist só aceita 127.0.0.1, que
+      # nunca é a origem vista pelo Traefik atrás do túnel, então responde 403.
+      - "traefik.http.routers.mentory-help-docs.rule=Host(`help.wwftech.com.br`) && (PathPrefix(`/api/docs`) || PathPrefix(`/api/redoc`) || Path(`/api/openapi.json`))"
+      - "traefik.http.routers.mentory-help-docs.entrypoints=web"
+      - "traefik.http.routers.mentory-help-docs.priority=100"
+      - "traefik.http.routers.mentory-help-docs.service=mentory-help"
+      - "traefik.http.routers.mentory-help-docs.middlewares=mentory-help-bloqueio"
+      - "traefik.http.middlewares.mentory-help-bloqueio.ipallowlist.sourcerange=127.0.0.1/32"
+
+  api:
+    environment:
+      # Links dos e-mails (redefinição de senha etc.) apontam para o endereço público.
+      PORTAL_URL: https://help.wwftech.com.br
+
+  worker:
+    environment:
+      PORTAL_URL: https://help.wwftech.com.br
+
+networks:
+  proxy:
+    external: true

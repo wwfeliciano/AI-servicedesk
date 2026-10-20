@@ -6,10 +6,13 @@ portal, e-mail e WhatsApp.
 
 Projeto acadêmico — CEUNSP, Ciência da Computação, Análise e Projeto de Sistemas.
 
-> **Situação:** Fase 0 em andamento. Sobem banco, Redis, MinIO, Mailpit, a API e o worker; o
-> esquema do banco (6 tabelas, ENUMs, índices e as 7 categorias) é aplicado por `make migrate`
-> (F0.3 concluída).
-> Andamento em [docs/DEVELOPMENT_STATUS.md](docs/DEVELOPMENT_STATUS.md).
+> **Situação:** Fases 0 a 6 concluídas (~97%). No ar: banco, Redis, MinIO, Mailpit, API, worker, o
+> `web` (SPA React/Nginx) e os serviços de integração **n8n** e **WAHA**. Já funcionam
+> autenticação, abertura/consulta de chamados, anexos, notificações, o ciclo de vida completo, a
+> Base de Conhecimento (busca full-text) e os canais externos (e-mail/WhatsApp via outbox → n8n →
+> WAHA/SMTP, com bot e vínculo pelo WhatsApp). Próxima etapa: **F7** (esqueci a senha, SLA do mês,
+> login com Google e itens de produção). Andamento em
+> [docs/DEVELOPMENT_STATUS.md](docs/DEVELOPMENT_STATUS.md).
 
 ## Pré-requisitos
 
@@ -31,6 +34,24 @@ make ps      # estado dos serviços
 make help    # todos os atalhos
 ```
 
+Primeiro administrador (lê `ADMIN_NOME`, `ADMIN_EMAIL` e `ADMIN_SENHA` do `.env`; idempotente, não
+duplica). Exige a imagem do backend atualizada (`make build`):
+
+```bash
+make criar-admin
+```
+
+Dados de desenvolvimento (só com `AMBIENTE=dev`; dados fictícios, senha padrão `mentory-dev-123`):
+
+```bash
+make seed              # 1 admin + 3 analistas + 10 clientes e ~60 chamados variados (idempotente)
+make seed-performance  # 200 usuários e 10.000 chamados em lote, para medir o RNF02
+make test-performance  # roda o teste de desempenho do RNF02 (lista ≤ 2 s), sob demanda
+```
+
+A tela de login consome `GET /api/config/publica` (rota pública: canais de suporte, disponibilidade
+do login com Google e versão da API).
+
 Qualidade e build do backend (usam o `uv` no host):
 
 ```bash
@@ -41,15 +62,29 @@ make build     # build das imagens Docker (api e worker)
 make migration nome=descricao   # gera uma migration por autogenerate (revisar à mão)
 ```
 
+Front-end (SPA React + Vite + Tailwind 4; usam o `npm` no host):
+
+```bash
+make front-install  # npm ci
+make front-dev      # Vite em 127.0.0.1:5173, com proxy /api → 127.0.0.1:8100
+make front-lint     # ESLint + typecheck (tsc --noEmit)
+make front-test     # Vitest
+make front-build    # build de produção (tsc -b && vite build)
+make front-gen-api  # regenera src/api/schema.ts a partir do OpenAPI (API no ar)
+```
+
 Serviços em desenvolvimento (portas só em `127.0.0.1`, configuráveis no `.env`):
 
 | Serviço | Endereço no host | Uso |
 |---|---|---|
+| Web (SPA React/Nginx) | `http://127.0.0.1:8180` | Portal; faz proxy de `/api` para a API |
 | API (FastAPI) | `http://127.0.0.1:8100` | `GET /api/health` e `/api/health/db`; docs em `/api/docs` |
 | PostgreSQL 17 | `127.0.0.1:5442` | DBeaver: banco, usuário e senha do `.env` |
 | MinIO (S3) | `http://127.0.0.1:9100` | API S3 dos anexos (F3) |
 | Console do MinIO | `http://127.0.0.1:9101` | usuário `S3_ACCESS_KEY`, senha `S3_SECRET_KEY` |
 | Mailpit | `http://127.0.0.1:8125` | caixa de e-mails de teste (SMTP em 1125) |
+| n8n | `http://127.0.0.1:5678` | automação dos canais externos (F6); ver `integrations/n8n/` |
+| WAHA | `http://127.0.0.1:3000` | WhatsApp HTTP API (F6); sessão/QR, ver `integrations/waha/` |
 
 Para abrir de outra máquina, use um túnel SSH (`ssh -L 9101:127.0.0.1:9101 ubuntu@servidor`) ou o
 encaminhamento de portas do VS Code.
@@ -110,8 +145,8 @@ helpdeskai/
 ├── AGENTS.md · CLAUDE.md · README.md
 ├── docs/                 documentação (acima)
 ├── backend/              API FastAPI (app/core, controllers; worker) — banco e migrations na F0.3
-├── frontend/             SPA React (a partir da F0.5)
-├── infra/                init do Postgres, gerador do .env (Nginx na F0.5)
+├── frontend/             SPA React (Vite + Tailwind 4; servida pelo Nginx no serviço web)
+├── infra/                init do Postgres, gerador do .env
 ├── docker-compose.yml    serviços base · docker-compose.override.yml: dev
 ├── Makefile · .env.example
 └── integrations/         n8n e WAHA (F6)

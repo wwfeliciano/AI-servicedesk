@@ -1,0 +1,180 @@
+@import 'tailwindcss';
+
+/* Fontes auto-hospedadas (seção 8.2): IBM Plex Sans no texto, IBM Plex Mono nos dados. */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-sans/700.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+/*
+ * Identidade do Mentory herdada do esboço "01 — Foundations" (seção 8.2 do prompt;
+ * ADR 2026-10-17). Marca teal, IBM Plex Sans, sidebar branca, tema claro e escuro.
+ *
+ * As cores semânticas moram em variáveis CSS que trocam por [data-theme]; o bloco
+ * @theme do Tailwind 4 aponta para elas, então os utilitários (bg-surface,
+ * text-brand, border-line, bg-brand-soft...) seguem o tema automaticamente.
+ */
+
+/* ----- Tema claro (valores do esboço) ----- */
+:root,
+[data-theme='light'] {
+  --mt-brand-600: #066873;
+  --mt-brand-500: #087f8c;
+  --mt-brand-700: #055058;
+  --mt-canvas: #f8fafc;
+  --mt-surface: #ffffff;
+  --mt-surface-2: #f4f7f9;
+  --mt-text: #0b1220;
+  --mt-secondary: #475569;
+  --mt-muted: #8a95a3;
+  --mt-line: #e5eaee;
+  --mt-line-2: #d7dee4;
+  --mt-success: #16885b;
+  --mt-warning: #c77700;
+  --mt-danger: #d13b4a;
+  --mt-info: #2563eb;
+  --mt-brand-soft: #eaf4f4;
+  --mt-brand-soft-ink: #116472;
+  --mt-success-soft: #ebf6ef;
+  --mt-success-ink: #15754f;
+  --mt-warning-soft: #fff4e3;
+  --mt-warning-ink: #9a5e02;
+  --mt-danger-soft: #fbe9eb;
+  --mt-danger-ink: #b22f3d;
+  --mt-info-soft: #edf2ff;
+  --mt-info-ink: #2457c5;
+  --mt-neutral-soft: #eef1f4;
+  --mt-neutral-ink: #55606d;
+  --mt-sidebar: #ffffff;
+  --mt-sidebar-active-bg: #eaf4f4;
+  --mt-sidebar-active-ink: #066873;
+  --mt-shadow-card: 0 1px 2px rgb(11 18 32 / 0.05);
+  --mt-shadow-pop: 0 6px 20px rgb(35 78 72 / 0.08);
+  color-scheme: light;
+}
+
+/* ----- Tema escuro (derivado da paleta teal) ----- */
+[data-theme='dark'] {
+  --mt-brand-600: #2bb7c4;
+  --mt-brand-500: #36c6d1;
+  --mt-brand-700: #1f98a3;
+  --mt-canvas: #0a1114;
+  --mt-surface: #0f181c;
+  --mt-surface-2: #0c1417;
+  --mt-text: #e9f1f2;
+  --mt-secondary: #9fb0b6;
+  --mt-muted: #6f8188;
+  --mt-line: #1b282d;
+  --mt-line-2: #263539;
+  --mt-success: #3cc489;
+  --mt-warning: #e0a44b;
+  --mt-danger: #ef6475;
+  --mt-info: #5b8bff;
+  --mt-brand-soft: #0e2a2f;
+  --mt-brand-soft-ink: #7fd6de;
+  --mt-success-soft: #0d2a1e;
+  --mt-success-ink: #6fd3a6;
+  --mt-warning-soft: #2a1f0d;
+  --mt-warning-ink: #e7b874;
+  --mt-danger-soft: #2c1418;
+  --mt-danger-ink: #f08b97;
+  --mt-info-soft: #15213c;
+  --mt-info-ink: #9bb6ff;
+  --mt-neutral-soft: #172328;
+  --mt-neutral-ink: #9fb0b6;
+  --mt-sidebar: #0c1417;
+  --mt-sidebar-active-bg: #0e2a2f;
+  --mt-sidebar-active-ink: #7fd6de;
+  --mt-shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --mt-shadow-pop: 0 6px 20px rgb(0 0 0 / 0.45);
+  color-scheme: dark;
+}
+
+/* ----- Tokens do Tailwind 4 (viram utilitários) ----- */
+@theme inline {
+  --color-brand: var(--mt-brand-600);
+  --color-brand-500: var(--mt-brand-500);
+  --color-brand-700: var(--mt-brand-700);
+  --color-brand-soft: var(--mt-brand-soft);
+  --color-brand-soft-ink: var(--mt-brand-soft-ink);
+
+  --color-canvas: var(--mt-canvas);
+  --color-surface: var(--mt-surface);
+  --color-surface-2: var(--mt-surface-2);
+  --color-ink: var(--mt-text);
+  --color-secondary: var(--mt-secondary);
+  --color-muted: var(--mt-muted);
+  --color-line: var(--mt-line);
+  --color-line-2: var(--mt-line-2);
+
+  --color-success: var(--mt-success);
+  --color-success-soft: var(--mt-success-soft);
+  --color-success-ink: var(--mt-success-ink);
+  --color-warning: var(--mt-warning);
+  --color-warning-soft: var(--mt-warning-soft);
+  --color-warning-ink: var(--mt-warning-ink);
+  --color-danger: var(--mt-danger);
+  --color-danger-soft: var(--mt-danger-soft);
+  --color-danger-ink: var(--mt-danger-ink);
+  --color-info: var(--mt-info);
+  --color-info-soft: var(--mt-info-soft);
+  --color-info-ink: var(--mt-info-ink);
+  --color-neutral-soft: var(--mt-neutral-soft);
+  --color-neutral-ink: var(--mt-neutral-ink);
+
+  --color-sidebar: var(--mt-sidebar);
+  --color-sidebar-active-bg: var(--mt-sidebar-active-bg);
+  --color-sidebar-active-ink: var(--mt-sidebar-active-ink);
+
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Raios do esboço: 6 · 10 · 14 · 20. */
+  --radius-controle: 0.375rem; /* 6px — botões/campos */
+  --radius-card: 0.75rem; /* 12px — cards/painéis */
+  --radius-card-lg: 1rem; /* 16px — superfícies grandes */
+
+  --shadow-card: var(--mt-shadow-card);
+  --shadow-pop: var(--mt-shadow-pop);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--mt-canvas);
+    color: var(--mt-text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  /* Foco visível e consistente (acessibilidade, seção 8.2). */
+  :focus-visible {
+    outline: 2px solid var(--mt-brand-500);
+    outline-offset: 2px;
+  }
+
+  /* Respeita quem pede menos animação. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

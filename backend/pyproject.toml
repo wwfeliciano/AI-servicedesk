@@ -18,6 +18,12 @@ dependencies = [
     "redis>=5.2,<6",
     "typer>=0.15,<0.16",
     "alembic>=1.14,<1.15",
+    "pyjwt>=2.10,<3",
+    "bcrypt>=4.2,<5",
+    "email-validator>=2.2,<3",
+    "boto3>=1.35,<2",
+    "python-multipart>=0.0.18,<0.1",
+    "httpx>=0.28,<0.29",
 ]
 
 [dependency-groups]
@@ -26,7 +32,6 @@ dev = [
     "mypy>=1.13,<2",
     "pytest>=8.3,<9",
     "pytest-cov>=6.0,<7",
-    "httpx>=0.28,<0.29",
     "fakeredis>=2.26,<3",
 ]
 
@@ -58,7 +63,7 @@ show_error_codes = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["fakeredis.*"]
+module = ["fakeredis.*", "boto3.*", "botocore.*"]
 ignore_missing_imports = true
 
 # ===== pytest =====
@@ -69,9 +74,10 @@ testpaths = ["tests"]
 # 90% em `services/` e 80% no total, mas na F0.4 quase não há camada de serviço,
 # então o piso fica baixo de propósito e será elevado quando os services da F1/F2
 # existirem.
-addopts = "-q --cov=app --cov-report=term-missing --cov-fail-under=50"
+addopts = "-q --cov=app --cov-report=term-missing --cov-fail-under=50 -m 'not performance and not lento'"
 markers = [
     "performance: testes de desempenho (RNF02), rodados sob demanda",
+    "lento: testes demorados (upload grande, ida e volta de migrations), sob demanda",
 ]
 
 # ===== cobertura (pytest-cov / coverage.py) =====

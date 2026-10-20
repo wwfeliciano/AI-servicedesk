@@ -27,8 +27,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 from app.entities.enums import (
+    CanalOrigem,
     SeveridadeChamado,
     StatusChamado,
+    canal_origem_enum,
     severidade_chamado_enum,
     status_chamado_enum,
 )
@@ -69,11 +71,24 @@ class Chamado(Base):
     status_chamado: Mapped[StatusChamado] = mapped_column(
         status_chamado_enum, nullable=False, server_default="NOVO"
     )
+    canal_origem: Mapped[CanalOrigem] = mapped_column(
+        canal_origem_enum, nullable=False, server_default="PORTAL"
+    )
     data_criacao: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     data_atualizacao: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    data_conclusao: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    data_fechamento: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    # Prazo-alvo de SLA, gravado na abertura (F7.2): data_criacao + prazo_horas da severidade.
+    prazo_sla: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )
 
     __table_args__ = (

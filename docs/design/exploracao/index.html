@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mentory · Exploração de design (institucional × técnico)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Direção A: Söhne-like → Inter Tight + IBM Plex Mono. Direção B: editorial → Fraunces + Inter.
+     Direção C: engenharia → Space Grotesk + IBM Plex Mono. (Fontes só para a exploração.) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   TOKENS COMUNS (estrutura; cada direção sobrescreve por data-dir)
+   Dois temas por direção: [data-theme="light"] e [data-theme="dark"].
+   ============================================================ */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background .2s ease, color .2s ease;
+}
+h1,h2,h3,h4 { font-family: var(--font-display); margin: 0; letter-spacing: var(--tracking-display, -0.01em); }
+a { color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ---------- DIREÇÃO A — "Cobalto Corporativo" ----------
+   Institucional confiável + técnico. Azul profundo retrabalhado (frio, menos saturado
+   que o protótipo), superfícies com BORDA (sem sombra flutuante), mono nos metadados.
+   Forma reta-suave (6px). Densidade média. */
+[data-dir="A"][data-theme="light"] {
+  --fundo:#f4f5f7; --superficie:#ffffff; --superficie-2:#fbfbfd;
+  --texto:#10151f; --texto-2:#5a6475; --texto-3:#8a93a3;
+  --borda:#dde1e9; --borda-forte:#c6ccd8;
+  --primaria:#1b43a8; --primaria-ct:#ffffff; --primaria-suave:#eaeffa;
+  --acento:#0e7490;
+  --sidebar:#0e1626; --sidebar-texto:#aeb7c7; --sidebar-ativo:#1b2b48; --sidebar-ativo-txt:#ffffff;
+  --ok:#157347; --ok-bg:#e9f6ee; --alerta:#b45309; --alerta-bg:#fdf3e6;
+  --perigo:#c42b2b; --perigo-bg:#fbeaea; --info:#1b43a8; --info-bg:#eaeffa; --neutro-bg:#eef0f4;
+  --font-sans:'Inter Tight',system-ui,sans-serif; --font-display:'Inter Tight',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',monospace; --tracking-display:-0.02em;
+  --radius:6px; --radius-sm:4px; --shadow:none; --borda-card:1px solid var(--borda);
+}
+[data-dir="A"][data-theme="dark"] {
+  --fundo:#0a0e16; --superficie:#121824; --superficie-2:#0f141f;
+  --texto:#e7ebf2; --texto-2:#9aa4b5; --texto-3:#6b7383;
+  --borda:#232c3c; --borda-forte:#303a4d;
+  --primaria:#5b8bff; --primaria-ct:#0a0e16; --primaria-suave:#17233c;
+  --acento:#38bdf8;
+  --sidebar:#070a11; --sidebar-texto:#8a93a5; --sidebar-ativo:#17233c; --sidebar-ativo-txt:#ffffff;
+  --ok:#3ec37e; --ok-bg:#10231a; --alerta:#e0a44b; --alerta-bg:#241a0e;
+  --perigo:#f06565; --perigo-bg:#2a1414; --info:#5b8bff; --info-bg:#17233c; --neutro-bg:#1a2130;
+  --font-sans:'Inter Tight',system-ui,sans-serif; --font-display:'Inter Tight',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',monospace; --tracking-display:-0.02em;
+  --radius:6px; --radius-sm:4px; --shadow:none; --borda-card:1px solid var(--borda);
+}
+
+/* ---------- DIREÇÃO B — "Papel & Tinta" ----------
+   Editorial institucional. Fundo quente (off-white/papel), tipografia display serifada
+   (Fraunces) com forte contraste de tamanho; acento índigo-tinta e verde-oliva.
+   Superfícies por LINHAS e filetes, pouco raio (4px). Densidade arejada. */
+[data-dir="B"][data-theme="light"] {
+  --fundo:#f3f0ea; --superficie:#fbf9f4; --superficie-2:#f6f3ec;
+  --texto:#1b1a17; --texto-2:#5e5a51; --texto-3:#8c877b;
+  --borda:#e0dacd; --borda-forte:#cfc8b6;
+  --primaria:#283593; --primaria-ct:#fbf9f4; --primaria-suave:#e7e8f5;
+  --acento:#5a7a2f;
+  --sidebar:#201e1a; --sidebar-texto:#b8b2a4; --sidebar-ativo:#2f2c26; --sidebar-ativo-txt:#fbf9f4;
+  --ok:#466a24; --ok-bg:#eef2e3; --alerta:#9a6213; --alerta-bg:#f6ecd9;
+  --perigo:#a52a2a; --perigo-bg:#f4e3df; --info:#283593; --info-bg:#e7e8f5; --neutro-bg:#ede9df;
+  --font-sans:'Inter',system-ui,sans-serif; --font-display:'Fraunces',Georgia,serif;
+  --font-mono:'Spline Sans Mono',monospace; --tracking-display:-0.01em;
+  --radius:4px; --radius-sm:3px; --shadow:none; --borda-card:1px solid var(--borda);
+}
+[data-dir="B"][data-theme="dark"] {
+  --fundo:#17150f; --superficie:#201d16; --superficie-2:#1b1812;
+  --texto:#f0ebe0; --texto-2:#b0a894; --texto-3:#7d7566;
+  --borda:#332f24; --borda-forte:#433d2e;
+  --primaria:#9fa8e8; --primaria-ct:#17150f; --primaria-suave:#23233a;
+  --acento:#a7c073;
+  --sidebar:#0f0e0a; --sidebar-texto:#a39b88; --sidebar-ativo:#23211a; --sidebar-ativo-txt:#f0ebe0;
+  --ok:#8fb75f; --ok-bg:#1a2111; --alerta:#d39b4a; --alerta-bg:#241a0c;
+  --perigo:#e07a6a; --perigo-bg:#2a1714; --info:#9fa8e8; --info-bg:#23233a; --neutro-bg:#201d15;
+  --font-sans:'Inter',system-ui,sans-serif; --font-display:'Fraunces',Georgia,serif;
+  --font-mono:'Spline Sans Mono',monospace; --tracking-display:-0.01em;
+  --radius:4px; --radius-sm:3px; --shadow:none; --borda-card:1px solid var(--borda);
+}
+
+/* ---------- DIREÇÃO C — "Console Técnico" ----------
+   Ferramenta de engenharia (Linear/Height). Grafite neutro, acento teal/verde-terminal,
+   tipografia geométrica (Space Grotesk) + mono onipresente nos dados. Superfícies planas
+   com 1px e leve realce, cantos 8px, densidade alta. */
+[data-dir="C"][data-theme="light"] {
+  --fundo:#eceef0; --superficie:#ffffff; --superficie-2:#f6f7f9;
+  --texto:#15181c; --texto-2:#59616b; --texto-3:#878e98;
+  --borda:#dadee3; --borda-forte:#c3c9d1;
+  --primaria:#0f766e; --primaria-ct:#ffffff; --primaria-suave:#dcf1ee;
+  --acento:#0f766e;
+  --sidebar:#16191d; --sidebar-texto:#9aa1ab; --sidebar-ativo:#23272e; --sidebar-ativo-txt:#ffffff;
+  --ok:#0f7a4f; --ok-bg:#e3f4ec; --alerta:#9a6a00; --alerta-bg:#f6efd9;
+  --perigo:#be2f3a; --perigo-bg:#f7e5e7; --info:#0e6a9e; --info-bg:#e1f0f8; --neutro-bg:#eceef1;
+  --font-sans:'Space Grotesk',system-ui,sans-serif; --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',monospace; --tracking-display:-0.01em;
+  --radius:8px; --radius-sm:6px; --shadow:none; --borda-card:1px solid var(--borda);
+}
+[data-dir="C"][data-theme="dark"] {
+  --fundo:#0c0e11; --superficie:#14171c; --superficie-2:#101317;
+  --texto:#e9ecf0; --texto-2:#949ba6; --texto-3:#656d78;
+  --borda:#22272e; --borda-forte:#2e353e;
+  --primaria:#2dd4bf; --primaria-ct:#06100e; --primaria-suave:#10332e;
+  --acento:#2dd4bf;
+  --sidebar:#07090b; --sidebar-texto:#868d98; --sidebar-ativo:#161a20; --sidebar-ativo-txt:#ffffff;
+  --ok:#35c586; --ok-bg:#0d2419; --alerta:#dca63f; --alerta-bg:#241c0c;
+  --perigo:#ef5f6b; --perigo-bg:#2a1417; --info:#49b0e6; --info-bg:#0f2634; --neutro-bg:#171b21;
+  --font-sans:'Space Grotesk',system-ui,sans-serif; --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',monospace; --tracking-display:-0.01em;
+  --radius:8px; --radius-sm:6px; --shadow:none; --borda-card:1px solid var(--borda);
+}
+
+/* ============================================================ COMPONENTES ============================================================ */
+.mono { font-family: var(--font-mono); font-feature-settings:"tnum" 1; }
+
+/* Topbar da ferramenta de exploração (fora do produto) */
+.toolbar {
+  position: sticky; top:0; z-index:50;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  padding:12px 20px; background:#0b0d12; color:#e7ebf2; border-bottom:1px solid #1d222c;
+  font-family:'Inter',system-ui,sans-serif;
+}
+.toolbar strong { font-weight:600; letter-spacing:-0.01em; }
+.toolbar .sep { width:1px; height:22px; background:#2a303c; }
+.seg { display:inline-flex; background:#151922; border:1px solid #262c38; border-radius:8px; padding:3px; gap:2px; }
+.seg button { border:0; background:transparent; color:#9aa4b5; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; }
+.seg button[aria-pressed="true"] { background:#2a3550; color:#fff; }
+.toolbar .hint { color:#7a8498; font-size:12px; }
+
+.stage { padding: 28px; display:grid; gap:28px; }
+.screen-label { font-family:'Inter',system-ui,sans-serif; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#8a93a3; margin:0 4px 10px; }
+
+/* ----- App shell (Dashboard) ----- */
+.app { display:grid; grid-template-columns: 248px 1fr; min-height: 680px;
+  border:var(--borda-card); border-radius: calc(var(--radius) + 4px); overflow:hidden; background:var(--superficie); }
+.side { background:var(--sidebar); color:var(--sidebar-texto); display:flex; flex-direction:column; padding:18px 14px; gap:6px; }
+.brand { display:flex; align-items:center; gap:10px; padding:6px 8px 16px; }
+.brand .logo { width:34px; height:34px; border-radius:8px; background:var(--primaria); color:var(--primaria-ct);
+  display:grid; place-items:center; font-weight:700; font-family:var(--font-display); }
+.brand .name { color:#fff; font-family:var(--font-display); font-weight:600; font-size:16px; line-height:1.1; }
+.brand .sub { color:var(--sidebar-texto); font-size:11px; }
+.whoami { display:flex; align-items:center; gap:10px; padding:10px 8px; border-top:1px solid rgba(255,255,255,.07); border-bottom:1px solid rgba(255,255,255,.07); margin-bottom:8px; }
+.whoami .av { width:32px; height:32px; border-radius:50%; background:var(--primaria-suave); color:var(--primaria); display:grid; place-items:center; font-weight:600; font-size:12px; }
+.whoami .n { color:#e7ebf2; font-weight:500; font-size:13px; }
+.whoami .r { font-size:11px; color:var(--sidebar-texto); }
+.nav { display:flex; flex-direction:column; gap:2px; margin-top:4px; }
+.nav a { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--radius-sm); color:var(--sidebar-texto); text-decoration:none; font-size:13.5px; font-weight:500; }
+.nav a .i { width:16px; height:16px; opacity:.85; }
+.nav a:hover { background:rgba(255,255,255,.05); color:#fff; }
+.nav a.on { background:var(--sidebar-ativo); color:var(--sidebar-ativo-txt); }
+.nav a.on::before { content:""; position:absolute; }
+.nav .badge { margin-left:auto; background:var(--perigo); color:#fff; font-size:10px; font-weight:600; border-radius:999px; padding:1px 7px; }
+.nav .new { margin-left:auto; background:var(--primaria-suave); color:var(--primaria); font-size:10px; font-weight:600; border-radius:4px; padding:1px 7px; letter-spacing:.02em; }
+.nav .spacer { flex:1; }
+
+.main { background:var(--fundo); padding:24px 28px; overflow:auto; }
+.main-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.greet { font-size:13px; color:var(--texto-2); margin-bottom:2px; }
+.title { font-size:26px; font-weight:700; color:var(--texto); }
+.title.serif { font-weight:600; }
+.btn { border:1px solid transparent; border-radius:var(--radius-sm); padding:10px 16px; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:8px; }
+.btn-primary { background:var(--primaria); color:var(--primaria-ct); }
+.btn-primary:hover { filter:brightness(1.06); }
+.btn-ghost { background:var(--superficie); color:var(--texto); border:1px solid var(--borda-forte); }
+
+.alert { display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:var(--radius); margin-bottom:20px;
+  background:var(--perigo-bg); border:1px solid color-mix(in srgb, var(--perigo) 30%, transparent); }
+.alert .dot { width:28px; height:28px; border-radius:7px; background:var(--perigo); color:#fff; display:grid; place-items:center; flex:none; }
+.alert .t { font-weight:600; color:var(--texto); }
+.alert .d { color:var(--texto-2); font-size:12.5px; }
+.alert .act { margin-left:auto; background:var(--perigo); color:#fff; border-radius:var(--radius-sm); padding:8px 14px; font-weight:600; font-size:12.5px; border:0; }
+
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+.kpi { background:var(--superficie); border:var(--borda-card); border-radius:var(--radius); padding:16px; position:relative; }
+.kpi .cap { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.kpi .tag { font-size:11px; font-weight:600; padding:2px 9px; border-radius:999px; letter-spacing:.01em; }
+.tag.info { background:var(--info-bg); color:var(--info); }
+.tag.alerta { background:var(--alerta-bg); color:var(--alerta); }
+.tag.ok { background:var(--ok-bg); color:var(--ok); }
+.tag.perigo { background:var(--perigo-bg); color:var(--perigo); }
+.tag.neutro { background:var(--neutro-bg); color:var(--texto-2); }
+.kpi .ic { width:18px; height:18px; color:var(--texto-3); }
+.kpi .num { font-family:var(--font-display); font-size:34px; font-weight:700; line-height:1; color:var(--texto); }
+.kpi .lbl { font-size:12px; color:var(--texto-3); margin-top:4px; }
+
+.cols { display:grid; grid-template-columns: 1fr 300px; gap:18px; align-items:start; }
+.panel { background:var(--superficie); border:var(--borda-card); border-radius:var(--radius); }
+.panel-h { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--borda); }
+.panel-h h3 { font-size:14.5px; font-weight:600; color:var(--texto); }
+.panel-h a { font-size:12.5px; color:var(--primaria); text-decoration:none; font-weight:500; }
+.ticket { padding:14px 16px; border-bottom:1px solid var(--borda); }
+.ticket:last-child { border-bottom:0; }
+.ticket .row1 { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.ticket .pk { font-family:var(--font-mono); font-size:12px; color:var(--texto-2); font-weight:500; }
+.ticket .cat { font-size:10.5px; font-weight:600; padding:1px 7px; border-radius:4px; background:var(--neutro-bg); color:var(--texto-2); }
+.ticket .st { margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:999px; }
+.st.andamento { background:var(--alerta-bg); color:var(--alerta); }
+.st.aberto { background:var(--info-bg); color:var(--info); }
+.st.resolvido { background:var(--ok-bg); color:var(--ok); }
+.st .b { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.ticket .tt { font-size:14px; font-weight:600; color:var(--texto); margin-bottom:8px; }
+.ticket .meta { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--texto-3); }
+.sev { font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; }
+.sev.urgente { background:var(--perigo-bg); color:var(--perigo); }
+.sev.media { background:var(--info-bg); color:var(--info); }
+.sev.baixa { background:var(--ok-bg); color:var(--ok); }
+.qa { padding:8px; display:flex; flex-direction:column; gap:6px; }
+.qa button { text-align:left; border:1px solid var(--borda); background:var(--superficie-2); border-radius:var(--radius-sm); padding:12px 14px; font-weight:600; font-size:13px; color:var(--texto); display:flex; align-items:center; gap:10px; }
+.qa button.pri { background:var(--primaria); color:var(--primaria-ct); border-color:transparent; }
+.qa button:hover { border-color:var(--borda-forte); }
+
+/* ----- Login ----- */
+.login { display:grid; grid-template-columns: 1fr 1fr; min-height:620px; border:var(--borda-card); border-radius:calc(var(--radius) + 4px); overflow:hidden; }
+.login .aside { background:var(--sidebar); color:#fff; padding:40px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
+.login .aside .brand .name { font-size:18px; }
+.login .aside h2 { font-family:var(--font-display); font-size:40px; line-height:1.05; font-weight:700; margin:auto 0 16px; max-width:12ch; letter-spacing:var(--tracking-display); }
+.login .aside p.lead { color:var(--sidebar-texto); max-width:38ch; font-size:14.5px; }
+.login .feats { display:flex; flex-direction:column; gap:10px; margin-top:28px; }
+.login .feat { display:flex; gap:12px; align-items:flex-start; padding:14px; border-radius:var(--radius); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); }
+.login .feat .fi { width:30px; height:30px; border-radius:7px; background:rgba(255,255,255,.08); display:grid; place-items:center; flex:none; color:#fff; }
+.login .feat .ft { color:#fff; font-weight:600; font-size:13.5px; }
+.login .feat .fd { color:var(--sidebar-texto); font-size:12px; }
+.login .form { background:var(--superficie); padding:48px 52px; display:flex; flex-direction:column; justify-content:center; }
+.login .form h1 { font-size:30px; font-weight:700; color:var(--texto); margin-bottom:6px; }
+.login .form .sub { color:var(--texto-2); margin-bottom:26px; font-size:14px; }
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:12.5px; font-weight:600; color:var(--texto-2); margin-bottom:6px; }
+.field input { width:100%; padding:12px 13px; border:1px solid var(--borda-forte); border-radius:var(--radius-sm); background:var(--superficie-2); color:var(--texto); font-size:14px; }
+.field input:focus { outline:2px solid color-mix(in srgb, var(--primaria) 55%, transparent); outline-offset:1px; border-color:var(--primaria); }
+.forgot { text-align:right; }
+.forgot a { color:var(--primaria); font-size:12.5px; text-decoration:none; font-weight:500; }
+.login .form .btn-primary { width:100%; justify-content:center; margin-top:8px; padding:13px; }
+.divider { display:flex; align-items:center; gap:12px; color:var(--texto-3); font-size:12px; margin:20px 0; }
+.divider::before,.divider::after { content:""; flex:1; height:1px; background:var(--borda); }
+.btn-google { width:100%; justify-content:center; gap:10px; padding:12px; border:1px solid var(--borda-forte); background:var(--superficie); color:var(--texto); border-radius:var(--radius-sm); font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; }
+.help { text-align:center; margin-top:18px; font-size:12.5px; color:var(--texto-3); }
+.help a { color:var(--primaria); font-weight:500; text-decoration:none; }
+
+.dir-note { font-family:'Inter',system-ui,sans-serif; background:var(--superficie-2); border:var(--borda-card); border-radius:var(--radius); padding:14px 16px; color:var(--texto-2); font-size:12.5px; line-height:1.6; }
+.dir-note b { color:var(--texto); }
+.swatches { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.sw { width:26px; height:26px; border-radius:6px; border:1px solid rgba(0,0,0,.12); }
+
+@media (max-width: 900px){
+  .login,.app { grid-template-columns:1fr; }
+  .kpis { grid-template-columns:repeat(2,1fr); }
+  .cols { grid-template-columns:1fr; }
+  .login .aside { display:none; }
+}
+</style>
+</head>
+<body data-dir="A" data-theme="light">
+
+<div class="toolbar">
+  <strong>Mentory · Exploração de design</strong>
+  <span class="hint">institucional × técnico — anti "cara de IA"</span>
+  <span class="sep"></span>
+  <span class="hint">Direção</span>
+  <div class="seg" id="dirseg">
+    <button data-dir="A" aria-pressed="true">A · Cobalto</button>
+    <button data-dir="B" aria-pressed="false">B · Papel &amp; Tinta</button>
+    <button data-dir="C" aria-pressed="false">C · Console</button>
+  </div>
+  <span class="sep"></span>
+  <span class="hint">Tema</span>
+  <div class="seg" id="themeseg">
+    <button data-theme="light" aria-pressed="true">Claro</button>
+    <button data-theme="dark" aria-pressed="false">Escuro</button>
+  </div>
+</div>
+
+<div class="stage">
+
+  <div class="dir-note" id="note"></div>
+
+  <div>
+    <p class="screen-label">Tela 01 — Login</p>
+    <div class="login">
+      <div class="aside">
+        <div class="brand">
+          <div class="logo">M</div>
+          <div><div class="name">Mentory</div><div class="sub">Help Desk</div></div>
+        </div>
+        <h2 id="login-h2">Suporte que resolve de verdade.</h2>
+        <p class="lead">Abra chamados, acompanhe o andamento e encontre respostas rápidas — tudo num só lugar.</p>
+        <div class="feats">
+          <div class="feat"><div class="fi">⚡</div><div><div class="ft">Resposta rápida</div><div class="fd">SLA por categoria e prioridade</div></div></div>
+          <div class="feat"><div class="fi">◷</div><div><div class="ft">Acompanhamento em tempo real</div><div class="fd">Atualizações por portal e e-mail</div></div></div>
+          <div class="feat"><div class="fi">▤</div><div><div class="ft">Histórico completo</div><div class="fd">Todos os seus chamados num painel</div></div></div>
+        </div>
+      </div>
+      <div class="form">
+        <h1>Bem-vindo de volta</h1>
+        <p class="sub">Acesse o portal de suporte com suas credenciais corporativas.</p>
+        <div class="field"><label>E-mail corporativo</label><input value="ana.lima@empresa.com.br" /></div>
+        <div class="field"><label>Senha</label><input type="password" value="placeholder" /></div>
+        <div class="forgot"><a>Esqueci minha senha</a></div>
+        <button class="btn btn-primary">Entrar no sistema</button>
+        <div class="divider">ou</div>
+        <button class="btn-google"><span>G</span> Entrar com Google Workspace</button>
+        <p class="help">Problemas com acesso? <a>Contate o TI</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="screen-label">Tela 02 — Dashboard</p>
+    <div class="app">
+      <aside class="side">
+        <div class="brand">
+          <div class="logo">M</div>
+          <div><div class="name">Mentory</div><div class="sub">Help Desk</div></div>
+        </div>
+        <div class="whoami"><div class="av">AL</div><div><div class="n">Ana Lima</div><div class="r">Analista de Marketing</div></div></div>
+        <nav class="nav">
+          <a class="on">▦ Dashboard</a>
+          <a>▤ Meus Chamados</a>
+          <a>◉ Novo Chamado <span class="new">Novo</span></a>
+          <a>▥ Base de Conhecimento</a>
+          <a>◔ Notificações <span class="badge">2</span></a>
+          <span class="spacer"></span>
+          <a>⦿ Perfil</a>
+        </nav>
+      </aside>
+      <section class="main">
+        <div class="main-head">
+          <div><div class="greet">Bom dia, Ana</div><div class="title" id="dash-title">Seu painel de suporte</div></div>
+          <button class="btn btn-primary">+ Novo Chamado</button>
+        </div>
+
+        <div class="alert">
+          <div class="dot">!</div>
+          <div><div class="t">1 chamado urgente aguardando atenção</div><div class="d">Chamados urgentes têm prioridade máxima e são atendidos primeiro.</div></div>
+          <button class="act">Ver agora</button>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="cap"><span class="ic">▣</span><span class="tag info">Abertos</span></div><div class="num">1</div><div class="lbl">chamados</div></div>
+          <div class="kpi"><div class="cap"><span class="ic">◐</span><span class="tag alerta">Em andamento</span></div><div class="num">2</div><div class="lbl">chamados</div></div>
+          <div class="kpi"><div class="cap"><span class="ic">✓</span><span class="tag ok">Resolvidos</span></div><div class="num">3</div><div class="lbl">chamados</div></div>
+          <div class="kpi"><div class="cap"><span class="ic">◉</span><span class="tag perigo">Urgentes</span></div><div class="num">1</div><div class="lbl">chamados</div></div>
+        </div>
+
+        <div class="cols">
+          <div class="panel">
+            <div class="panel-h"><h3>Chamados recentes</h3><a>Ver todos →</a></div>
+            <div class="ticket">
+              <div class="row1"><span class="pk">TK-0041</span><span class="cat">TI</span><span class="st andamento"><span class="b"></span>Em andamento</span></div>
+              <div class="tt">VPN não conecta após atualização do Windows</div>
+              <div class="meta"><span class="sev urgente">⚠ Urgente</span><span>15d atrás</span><span>→ Rafael Mendes</span></div>
+            </div>
+            <div class="ticket">
+              <div class="row1"><span class="pk">TK-0040</span><span class="cat">Acesso</span><span class="st aberto"><span class="b"></span>Aberto</span></div>
+              <div class="tt">Solicitar acesso ao sistema Protheus</div>
+              <div class="meta"><span class="sev media">Média</span><span>16d atrás</span></div>
+            </div>
+            <div class="ticket">
+              <div class="row1"><span class="pk">TK-0039</span><span class="cat">Hardware</span><span class="st resolvido"><span class="b"></span>Resolvido</span></div>
+              <div class="tt">Troca de monitor com defeito de imagem</div>
+              <div class="meta"><span class="sev baixa">Baixa</span><span>21d atrás</span><span>→ Rafael Mendes</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Ações rápidas</h3></div>
+            <div class="qa">
+              <button class="pri">▣ Abrir novo chamado</button>
+              <button>▥ Base de conhecimento</button>
+              <button>▤ Ver histórico</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const NOTES = {
+  A: {
+    h2:"Suporte que resolve de verdade.",
+    dash:"Seu painel de suporte",
+    html:`<b>Direção A — Cobalto Corporativo.</b> Azul profundo retrabalhado (frio, dessaturado), superfícies definidas por <b>borda de 1px</b> em vez de sombra flutuante, protocolos e datas em <b>mono (IBM Plex Mono)</b>. Tipografia Inter Tight (institucional, compacta). Cantos de 6px, densidade média. É o caminho mais próximo do protótipo atual, porém "desinflado": sem card flutuante, sem emoji decorativo, hierarquia por peso e cor. Sensação: ERP/banco moderno e confiável.`
+  },
+  B: {
+    h2:"Suporte com gente de verdade.",
+    dash:"Seu painel de suporte",
+    html:`<b>Direção B — Papel & Tinta.</b> Fundo quente (off-white tipo papel), <b>display serifado Fraunces</b> com forte contraste de tamanho nos títulos, acento índigo-tinta + verde-oliva. Superfícies por <b>filetes/linhas</b> e pouco raio (4px). Densidade arejada, editorial. Foge totalmente do "dashboard de IA": parece um relatório institucional impresso que virou software. Sensação: instituição séria, humana, com autoridade editorial.`
+  },
+  C: {
+    h2:"Resolva. Acompanhe. Documente.",
+    dash:"Painel de suporte",
+    html:`<b>Direção C — Console Técnico.</b> Grafite neutro, acento <b>teal/verde-terminal</b>, tipografia geométrica Space Grotesk + <b>mono onipresente</b> nos dados. Superfícies planas com 1px e realce sutil, cantos 8px, <b>densidade alta</b>. Inspiração Linear/Height. Sensação: ferramenta de engenharia/produtividade — para quem usa o dia inteiro e valoriza eficiência e precisão.`
+  }
+};
+const body = document.body;
+function swatches(){
+  const cs = getComputedStyle(body);
+  const keys = ['--sidebar','--primaria','--acento','--ok','--alerta','--perigo'];
+  return '<div class="swatches">'+keys.map(k=>`<span class="sw" title="${k}" style="background:${cs.getPropertyValue(k)}"></span>`).join('')+'</div>';
+}
+function apply(){
+  const d = body.getAttribute('data-dir');
+  document.getElementById('login-h2').textContent = NOTES[d].h2;
+  document.getElementById('dash-title').textContent = NOTES[d].dash;
+  document.getElementById('note').innerHTML = NOTES[d].html + swatches();
+}
+document.getElementById('dirseg').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  body.setAttribute('data-dir', b.dataset.dir);
+  [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed', x===b));
+  apply();
+});
+document.getElementById('themeseg').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  body.setAttribute('data-theme', b.dataset.theme);
+  [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed', x===b));
+  apply();
+});
+apply();
+</script>
+</body>
+</html>

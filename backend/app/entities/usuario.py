@@ -26,6 +26,8 @@ class Usuario(Base):
     __table_args__ = (
         UniqueConstraint("email", name="uq_usuarios_email"),
         CheckConstraint("email = lower(email)", name="ck_usuarios_email_minusculo"),
+        UniqueConstraint("whatsapp_chat_id", name="uq_usuarios_whatsapp_chat_id"),
+        UniqueConstraint("whatsapp_lid", name="uq_usuarios_whatsapp_lid"),
     )
 
     id_usuario: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
@@ -39,4 +41,17 @@ class Usuario(Base):
     ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=func.true())
     data_cadastro: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    # Canais externos (F6, migration 0006). O chat_id/lid são únicos quando preenchidos.
+    whatsapp_chat_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    whatsapp_lid: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    whatsapp_numero: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    whatsapp_opt_in: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=func.false()
+    )
+    whatsapp_consentimento_em: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    notificar_email: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=func.true()
     )

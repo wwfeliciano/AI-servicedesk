@@ -1,0 +1,23 @@
+# Dependências
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Caches de ferramentas
+.vite/
+.eslintcache
+coverage/
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
